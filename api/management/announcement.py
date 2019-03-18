@@ -10,13 +10,13 @@ async def bp_add(request):
     return response
 
 @announcement.route('/edit/<ID>', methods=['POST'])
-async def bp_add(request):
+async def bp_edit(request):
     
     response =  json({})
     return response
 
 @announcement.route('/delete/<ID>', methods=['POST'])
-async def bp_add(request):
+async def bp_delete(request):
     
     response =  json({})
     return response
