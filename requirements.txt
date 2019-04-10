@@ -1,6 +1,7 @@
 aiofiles==0.4.0
 httptools==0.0.13
 multidict==4.5.2
+peewee==3.9.3
 PyMySQL==0.9.3
 sanic==18.12.0
 ujson==1.35
