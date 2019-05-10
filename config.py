@@ -1,4 +1,3 @@
-
 """
 SQL_CREDENTIALS is the parameters of Connection constructor in PyMySQL
 but in map

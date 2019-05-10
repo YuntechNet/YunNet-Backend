@@ -16,8 +16,9 @@ class SQLBase:
     def __del__(self):
         if self.connection.open():
             self.connection.close()
+
     def commit(self):
         self.connection.commit()
+
     def rollback(self):
         self.connection.rollback()
-        
