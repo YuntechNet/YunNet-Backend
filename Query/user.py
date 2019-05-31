@@ -2,6 +2,7 @@ from pymysql import MySQLError
 from pymysql.connections import Connection
 from sanic.log import logger
 
+
 from Base.SQL import SQLBase
 
 
@@ -50,6 +51,24 @@ class User(SQLBase):
                 logger.error("fail to add user SQL:{}".format(
                     cur.mogrify(sql_user, para_input2)))
                 return False
+
+    def get_username(self, query: str) -> str:
+        """Get actual username by username, bed, ip
+
+        Args:
+            query -- username, bed, or IP
+
+        Returns:
+            tuple:
+            (
+                username -- string of username
+            )
+        """
+        sql = "SELECT `account` from `userinfo` WHERE  %query IN (`account`, `bed_id`, `ip_id`)"
+        para_input = {'query': self.connection.escape_string(query)}
+        with self.connection.cursor() as cur:
+            cur.execute(sql, para_input)
+            return cur.fetchone()
 
     def get_password(self, username: str) -> str:
         """Get user's password hash

@@ -5,7 +5,7 @@ from sanic.log import logger
 from Base.SQL import SQLBase
 
 
-class User(SQLBase):
+class MAC(SQLBase):
     def get_mac(self, username: str) -> tuple:
         """get mac by username
 
