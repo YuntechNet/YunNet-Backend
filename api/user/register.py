@@ -3,8 +3,8 @@ from sanic import Blueprint
 
 register = Blueprint('register')
 
+
 @register.route('/register', methods=['POST'])
 async def bp_register(request):
-    
-    response =  json({})
+    response = json({})
     return response

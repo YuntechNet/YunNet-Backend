@@ -3,15 +3,15 @@ Configuration file for YunNet-Backend
 """
 import sanic
 
-#---Begin configuration file---#
+# ---Begin configuration file--- #
 
 '''
 JWT secret
 '''
 JWT = {
-    'useRSA': False, # RSA support is at low priority
+    'useRSA': False,  # RSA support is at low priority
     'jwtSecret': 'PutYourLongJsonWebTokenSecretHereForVerifyingSignature',
-    'algorithm': 'HS256', # set approriate algorithm
+    'algorithm': 'HS256',  # set approriate algorithm
     # 'jwtPublicKey': '',
     # 'jwtPrivateKey': '',
 }
@@ -34,7 +34,7 @@ Session module endpoint configuration
 '''
 SESSION_MODULE = {
     'endpoint': 'http://0.0.0.0:5000/Session',
-    #'api_key': '',
+    # 'api_key': '',
 }
 
 '''
@@ -44,7 +44,6 @@ RECAPTCHA = {
     'enabled': True,
     'secret': '',
 }
-
 
 '''
 Sanic app configuration

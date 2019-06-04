@@ -1,7 +1,5 @@
 from pymysql import MySQLError
-from pymysql.connections import Connection
 from sanic.log import logger
-
 from Base.SQL import SQLBase
 
 

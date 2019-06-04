@@ -1,15 +1,11 @@
 from pymysql import MySQLError
-from pymysql.connections import Connection
 from sanic.log import logger
-
-
 from Base.SQL import SQLBase
 
 
 class User(SQLBase):
     def new_user(self, username: str, password: str, name: str,
                  group_code: str = '0100') -> bool:
-        # TODO(biboy1999):default group?
         """Add new user.
 
         Args:
@@ -64,7 +60,9 @@ class User(SQLBase):
                 username -- string of username
             )
         """
-        sql = "SELECT `account` from `userinfo` WHERE  %query IN (`account`, `bed_id`, `ip_id`)"
+        sql = ("SELECT `account` "
+               "FROM `userinfo` "
+               "WHERE  %query IN (`account`, `bed_id`, `ip_id`)")
         para_input = {'query': self.connection.escape_string(query)}
         with self.connection.cursor() as cur:
             cur.execute(sql, para_input)

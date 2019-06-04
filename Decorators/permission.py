@@ -1,5 +1,5 @@
 from functools import wraps
-from sanic.log import logging
+from sanic.log import logger
 from sanic.request import Request
 from sanic.response import json
 import jwt
@@ -7,7 +7,7 @@ import jwt
 from Base import message
 from Decorators import debug
 from Query import Permission
-from Session import verify_session
+
 
 def permission(code):
     def decorator(f):
@@ -17,25 +17,25 @@ def permission(code):
             config = request.app.config
             token = request.args['token']
             auth_header: str = request.headers['Authorization']
-            if auth_header.startwith('Bearer'):
+            if auth_header.startswith('Bearer'):
                 bearer = auth_header.split(' ', 1)
                 token = bearer[1]
-            
+
             payload = None
             try:
                 payload = jwt.decode(
-                                        token, config.JWT['secret'], 
-                                        algorithms=config.JWT['algorithm']
-                                    )
+                    token, config.JWT['secret'],
+                    algorithms=config.JWT['algorithm']
+                )
             except jwt.ExpiredSignatureError as e:
-                logging.debug(e)
+                logger.info(e)
                 return json(message('session_expired'), 401)
             except jwt.PyJWTError as e:
-                logging.debug(e)
+                logger.warning(e)
                 return json(message('invalid_session'), 401)
-            
+
             query = Permission()
-            
+
             is_authorized = query.check_permission(payload['username'], code)
 
             if is_authorized:
@@ -43,6 +43,7 @@ def permission(code):
                 return response
             else:
                 return json(message('no_permission'), 403)
-        return permission_decorator
-    return decorator
 
+        return permission_decorator
+
+    return decorator
