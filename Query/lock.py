@@ -31,8 +31,8 @@ class Lock(SQLBase):
                    "FROM `userinfo`"
                    "INNER JOIN `ip` ON `userinfo`.`ip_id` = `ip`.`ip`"
                    "INNER JOIN `dorm_lock` ON `dorm_lock`.`ip_id` = `ip`.`ip`"
-                   "WHERE `userinfo`.`account` = %username")
-            para_input = {"username": username}
+                   "WHERE `userinfo`.`account` = %s")
+            para_input = (username)
             cur.execute(sql, para_input)
         return cur.fetchall()
 
@@ -55,14 +55,11 @@ class Lock(SQLBase):
         with self.connection.cursor() as cur:
             sql = ("INSERT INTO `dorm_lock` "
                    "(`lock_date`,`unlock_date`,`reason`,`description`,`ip_id`)"
-                   "SELECT %start_date,%end_date,%reason,%desc, ui.`ip_id` "
+                   "SELECT %s,%s,%s,%s, ui.`ip_id` "
                    "FROM `userinfo` as ui "
-                   "WHERE ui.`account` = %username")
-            para_input = {"username": username,
-                          "start_date": lock_date,
-                          "end_date": unlock_date,
-                          "reason": reason,
-                          "desc": description}
+                   "WHERE ui.`account` = %s")
+            para_input = (
+                username, lock_date, unlock_date, reason, description)
             try:
                 cur.execute(sql, para_input)
                 self.commit()

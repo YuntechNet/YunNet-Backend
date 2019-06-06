@@ -11,10 +11,13 @@ class SQLBase:
     """
 
     def __init__(self):
-        self.connection: Connection = pymysql.connect((), SQL_CREDENTIALS)
+        self.connection = pymysql.connect(SQL_CREDENTIALS['host'],
+                                          SQL_CREDENTIALS['user'],
+                                          SQL_CREDENTIALS['password'],
+                                          SQL_CREDENTIALS['db'])
 
     def __del__(self):
-        if self.connection.open():
+        if self.connection.open:
             self.connection.close()
 
     def commit(self):

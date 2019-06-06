@@ -20,20 +20,14 @@ class User(SQLBase):
         """
         with self.connection.cursor() as cur:
             sql = ("INSERT INTO `userinfo` (`account`, `department`, `name`) "
-                   "VALUES (%username, %department, %name)")
-            para_input = {"username": username, "department": "",
-                          "name": name}
+                   "VALUES (%s, %s, %s)")
+            # TODO(biboy1999):department set here?
+            para_input = (username, "", name)
             sql_user = (
                 "INSERT INTO `user` (`account_id`, `passwd`, `group_id`, "
                 "`exclude_per`, `extend_per`, `extend_group`) "
-                "VALUES (%username, %password, %group,"
-                " %exc_per, %ext_per, %ext_group)")
-            para_input2 = {"username": username,
-                           "password": password,
-                           "group": group_code,
-                           "exc_per": "[]",
-                           "ext_per": "[]",
-                           "ext_group": "[]"}
+                "VALUES (%s, %s, %s, %s, %s, %s)")
+            para_input2 = (username, password, group_code, "[]", "[]", "[]")
             try:
                 cur.execute(sql, para_input)
                 cur.execute(sql_user, para_input2)
@@ -62,8 +56,8 @@ class User(SQLBase):
         """
         sql = ("SELECT `account` "
                "FROM `userinfo` "
-               "WHERE  %query IN (`account`, `bed_id`, `ip_id`)")
-        para_input = {'query': self.connection.escape_string(query)}
+               "WHERE  %s IN (`account`, `bed_id`, `ip_id`)")
+        para_input = (query)
         with self.connection.cursor() as cur:
             cur.execute(sql, para_input)
             return cur.fetchone()
@@ -81,8 +75,8 @@ class User(SQLBase):
         with self.connection.cursor() as cur:
             sql = ("SELECT `passwd` "
                    "FROM `user` "
-                   "WHERE `account_id` = %username")
-            para_input = {"username": username}
+                   "WHERE `account_id` = %s")
+            para_input = (username)
             cur.execute(sql, para_input)
         return cur.fetchone()
 
@@ -99,10 +93,9 @@ class User(SQLBase):
         """
         with self.connection.cursor() as cur:
             sql = ("UPDATE `user` "
-                   "SET `passwd` = %password "
-                   "WHERE `account_id` = %username")
-            para_input = {"username": username,
-                          "password": password}
+                   "SET `passwd` = %s "
+                   "WHERE `account_id` = %s")
+            para_input = (username, password)
             try:
                 cur.execute(sql, para_input)
                 self.commit()

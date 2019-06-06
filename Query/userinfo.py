@@ -33,9 +33,9 @@ class User(SQLBase):
         with self.connection.cursor() as cursor:
             sql: str = (
                 "SELECT * FROM `userinfo` WHERE "
-                "`account` = %username OR `bed_id` = %username"
+                "`account` = %s OR `bed_id` = %s"
             )
-            para_input = {"username": username}
+            para_input = (username, username)
             cursor.execute(sql, para_input)
             return cursor.fetchone()
 
@@ -67,30 +67,21 @@ class User(SQLBase):
         """
         with self.connection.cursor() as cursor:
             sql = ("UPDATE userinfo SET "
-                   "`department` = %department, "
-                   "`name` = %name, "
-                   "`lock_date` = %lock_date, "
-                   "`unlock_date` = %unlock_date, "
-                   "`launch_time` = %launch_time, "
-                   "`bed_id` = %bed_id, "
-                   "`ip_id` = %ip_id, "
-                   "`token` = %token, "
-                   "`back_mail` = %back_mail, "
-                   "`back_mac` = %back_mac, "
-                   "`last_log` = %last_log "
-                   "WHERE `account = %account`")
-            para_input = {"account": userinfo[0],
-                          "department": userinfo[1],
-                          "name": userinfo[2],
-                          "lock_date": userinfo[3],
-                          "unlock_date": userinfo[4],
-                          "launch_time": userinfo[5],
-                          "bed_id": userinfo[6],
-                          "ip_id": userinfo[7],
-                          "token": userinfo[8],
-                          "back_mail": userinfo[9],
-                          "back_mac": userinfo[10],
-                          "last_log": userinfo[11], }
+                   "`department` = %s, "
+                   "`name` = %s, "
+                   "`lock_date` = %s, "
+                   "`unlock_date` = %s, "
+                   "`launch_time` = %s, "
+                   "`bed_id` = %s, "
+                   "`ip_id` = %s, "
+                   "`token` = %s, "
+                   "`back_mail` = %s, "
+                   "`back_mac` = %s, "
+                   "`last_log` = %s "
+                   "WHERE `account = %s`")
+            para_input = (userinfo[1], userinfo[2], userinfo[3], userinfo[4],
+                          userinfo[5], userinfo[6], userinfo[7], userinfo[8],
+                          userinfo[9], userinfo[10], userinfo[11], userinfo[0])
             try:
                 cursor.execute(sql, para_input)
                 self.commit()

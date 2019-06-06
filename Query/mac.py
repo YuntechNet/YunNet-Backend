@@ -23,8 +23,8 @@ class MAC(SQLBase):
             sql = (
                 "SELECT ip.mac FROM userinfo "
                 "INNER JOIN ip ON userinfo.ip_id = ip.ip "
-                "WHERE userinfo.account = %username")
-            para_input = {"username": username}
+                "WHERE userinfo.account = %s")
+            para_input = (username)
             cur.execute(sql, para_input)
             return cur.fetchone()
 
@@ -42,10 +42,9 @@ class MAC(SQLBase):
         with self.connection.cursor() as cur:
             sql = ("UPDATE ip "
                    "INNER JOIN userinfo ON userinfo.ip_id = ip.ip "
-                   "SET ip.mac = %mac "
-                   "WHERE userinfo.account = %account ")
-            para_input = {"mac": mac,
-                          "account": account}
+                   "SET ip.mac = %s "
+                   "WHERE userinfo.account = %s ")
+            para_input = (mac, account)
             try:
                 cur.execute(sql, para_input)
                 self.commit()
