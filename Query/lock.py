@@ -11,17 +11,19 @@ class Lock(SQLBase):
             username:username
 
         Returns:
-            tuple list.
+            list dict.
 
-            Tuple is formatted as this:
-            (
-                id: int
-                lock_date: datetime
-                unlock_date: datetime
-                reason: str
-                description: str
-                ip_id: str
-            )
+            List is formatted as this:
+            [
+                {
+                    id: int,
+                    lock_date: datetime,
+                    unlock_date: datetime,
+                    reason: str,
+                    description: str,
+                    ip_id: str,
+                },
+            ]
 
         """
         with self.connection.cursor() as cur:
@@ -33,8 +35,14 @@ class Lock(SQLBase):
                    "INNER JOIN `dorm_lock` ON `dorm_lock`.`ip_id` = `ip`.`ip`"
                    "WHERE `userinfo`.`account` = %s")
             para_input = (username)
-            cur.execute(sql, para_input)
-        return cur.fetchall()
+
+            data = cur.fetchall()
+            key = ['id', 'lock_date', 'unlock_date', 'reason',
+                   'description', 'ip_id']
+
+            dicts = [dict(zip(key, d)) for d in data]
+
+        return dicts
 
     def set_lock(self, username: str, lock_date: str, unlock_date: str,
                  reason: str, description: str) -> bool:

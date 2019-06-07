@@ -4,16 +4,16 @@ from sanic.log import logger
 
 
 class User(SQLBase):
-    def get_userinfo(self, username: str) -> tuple:
+    def get_userinfo(self, username: str):
         """Get userinfo by username
 
         Args:
             username: username
 
         Returns:
-            tuple
+            dict
 
-            Tuple is formatted as this:
+            dict is formatted as this:
             (
                 account: str, # can't be null
                 department: str, #cant be null
@@ -37,7 +37,14 @@ class User(SQLBase):
             )
             para_input = (username, username)
             cursor.execute(sql, para_input)
-            return cursor.fetchone()
+            data = cursor.fetchone()
+            key = ['account', 'department', 'name', 'lock_date', 'unlock_date',
+                   'launch_time', 'bed_id', 'ip_id', 'token', 'back_email',
+                   'back_mac', 'last_log']
+
+            dicts = dict(zip(key, data))
+
+        return dicts
 
     def set_userinfo(self, userinfo: tuple) -> bool:
         """Set userinfo with tuple

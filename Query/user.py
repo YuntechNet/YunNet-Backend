@@ -48,11 +48,7 @@ class User(SQLBase):
         Args:
             query -- username, bed, or IP
 
-        Returns:
-            tuple:
-            (
-                username -- string of username
-            )
+        Returns:str, username, if not found return empty string.
         """
         sql = ("SELECT `account` "
                "FROM `userinfo` "
@@ -60,7 +56,11 @@ class User(SQLBase):
         para_input = (query)
         with self.connection.cursor() as cur:
             cur.execute(sql, para_input)
-            return cur.fetchone()
+            data = cur.fetchone()
+
+            if len(data) == 0:
+                return ''
+        return data[0]
 
     def get_password(self, username: str) -> str:
         """Get user's password hash
@@ -69,7 +69,7 @@ class User(SQLBase):
             username: username
 
         Returns:
-            str. User's password hash
+            str. User's password hash,if user not found return empty string
 
         """
         with self.connection.cursor() as cur:
@@ -78,7 +78,10 @@ class User(SQLBase):
                    "WHERE `account_id` = %s")
             para_input = (username)
             cur.execute(sql, para_input)
-        return cur.fetchone()
+            data = cur.fetchone()
+            if len(data) == 0:
+                return ''
+        return data[0]
 
     def set_password(self, username: str, password: str) -> bool:
         """Set user password

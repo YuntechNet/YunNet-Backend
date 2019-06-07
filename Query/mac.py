@@ -11,9 +11,9 @@ class MAC(SQLBase):
             username:username
 
         Returns:
-            tuple
+            dict
 
-            Tuple is formatted as this:
+            dict is formatted as this:
             (
                 mac: str
             )
@@ -26,7 +26,13 @@ class MAC(SQLBase):
                 "WHERE userinfo.account = %s")
             para_input = (username)
             cur.execute(sql, para_input)
-            return cur.fetchone()
+
+            data = cur.fetchall()
+            key = ['id', 'datetime', 'content', 'account_id']
+
+            dicts = dict(zip(key, data))
+
+        return dicts
 
     def set_mac(self, account: str, mac: str) -> bool:
         """Set mac by account_id
