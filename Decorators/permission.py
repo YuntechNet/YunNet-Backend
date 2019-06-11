@@ -1,22 +1,33 @@
 from functools import wraps
 from sanic.log import logger
-from sanic.request import Request
 from sanic.response import json
 import jwt
-
 from Base import message
-from Decorators import debug
 from Query import Permission
 
 
 def permission(code):
+    """check user permission
+
+    must be warp before all decorator
+
+    Args:
+        code: permission code
+    """
+
     def decorator(f):
-        @debug
+        # @debug
         @wraps(f)
-        async def permission_decorator(request: Request, *args, **kwargs):
+        async def permission_decorator(request, *args, **kwargs):
+
             config = request.app.config
-            token = request.args['token']
-            auth_header: str = request.headers['Authorization']
+            try:
+                # token = request.args['token']
+                auth_header = request.headers['Authorization']
+            except KeyError as e:
+                logger.debug(e)
+                return json(message('invalid session'))
+
             if auth_header.startswith('Bearer'):
                 bearer = auth_header.split(' ', 1)
                 token = bearer[1]
@@ -24,7 +35,7 @@ def permission(code):
             payload = None
             try:
                 payload = jwt.decode(
-                    token, config.JWT['secret'],
+                    token, config.JWT['jwtSecret'],
                     algorithms=config.JWT['algorithm']
                 )
             except jwt.ExpiredSignatureError as e:
