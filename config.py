@@ -4,6 +4,11 @@ Configuration file for YunNet-Backend
 import sanic
 
 # ---Begin configuration file--- #
+'''
+Password salt
+'''
+
+PASSWORD_SALT = 'PutYourSuperLongSaltSecretHereForPasswordHash'
 
 '''
 JWT secret
@@ -22,11 +27,11 @@ https://pymysql.readthedocs.io/en/latest/modules/connections.html#pymysql.connec
 '''
 
 SQL_CREDENTIALS = {
-    'host': ' 0.0.0.0',
-    'port': 3306,
+    'host': '0.0.0.0',
+    'port': 0,
     'user': 'username',
-    'password': 'passwd',
-    'db': 'db',
+    'password': 'password',
+    'db': 'db_name',
 }
 
 '''

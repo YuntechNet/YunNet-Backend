@@ -13,18 +13,16 @@ class Permission(SQLBase):
         """
 
         sql = ("SELECT * "
-               "FROM user "
-               "INNER JOIN `group` ON user.group_id = `group`.code "
-               "OR user.extend_group LIKE CONCAT('%%',`group`.code,'%%') "
-               "WHERE user.account_id = %s "
-               "AND `group`.per "
-               "LIKE CONCAT('%%',%s,'%%') "
-               "OR user.extend_per "
-               "LIKE CONCAT('%%',%s,'%%') "
-               "AND NOT user.exclude_per "
-               "LIKE CONCAT('%%',%s,'%%')")
+               "FROM (SELECT * "
+               "FROM `user` WHERE `user`.account_id = %s) as `user` "
+               "INNER JOIN `group` ON `user`.`group_id` = `group`.`code` "
+               "OR `user`.`extend_group` LIKE CONCAT('%%',`group`.`code`,'%%') "
+               "WHERE `user`.account_id = %s "
+               "AND (`group`.per LIKE CONCAT('%%',%s,'%%') "
+               "OR user.extend_per LIKE CONCAT('%%',%s,'%%')) "
+               "AND NOT user.exclude_per LIKE CONCAT('%%',%s,'%%')")
         with self.connection.cursor() as cur:
-            para_input = (username, code, code, code)
+            para_input = (username, username, code, code, code)
             cur.execute(sql, para_input)
             out = cur.fetchall()
             logger.debug(out)

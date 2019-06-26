@@ -27,12 +27,8 @@ class MAC(SQLBase):
             para_input = (username)
             cur.execute(sql, para_input)
 
-            data = cur.fetchall()
-            key = ['id', 'datetime', 'content', 'account_id']
-
-            dicts = dict(zip(key, data))
-
-        return dicts
+            data = cur.fetchone()
+        return data[0]
 
     def set_mac(self, account: str, mac: str) -> bool:
         """Set mac by account_id
