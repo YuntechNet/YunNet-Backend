@@ -21,16 +21,14 @@ def permission(code):
         async def permission_decorator(request, *args, **kwargs):
 
             config = request.app.config
-            try:
-                # token = request.args['token']
-                auth_header = request.headers['Authorization']
-            except KeyError as e:
-                logger.debug(e)
-                return json(message('invalid session'))
 
-            if auth_header.startswith('Bearer'):
-                bearer = auth_header.split(' ', 1)
-                token = bearer[1]
+            if 'Authorization' not in request.headers:
+                return json({'message': 'invalid_session'}, 403)
+
+            auth_header = request.headers['Authorization']
+
+            bearer = auth_header.split(' ', 1)
+            token = bearer[1]
 
             payload = None
             try:
@@ -47,10 +45,13 @@ def permission(code):
 
             query = Permission()
 
-            is_authorized = query.check_permission(payload['username'], code)
+            username = payload['username']
+
+            is_authorized = query.check_permission(username, code)
 
             if is_authorized:
-                response = await f(request, *args, **kwargs)
+
+                response = await f(request, username=username, *args, **kwargs)
                 return response
             else:
                 return json(message('no_permission'), 403)

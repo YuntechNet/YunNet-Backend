@@ -79,7 +79,7 @@ class User(SQLBase):
             para_input = (username)
             cur.execute(sql, para_input)
             data = cur.fetchone()
-            if len(data) == 0:
+            if data is None or len(data) == 0:
                 return ''
         return data[0]
 
