@@ -21,7 +21,7 @@ class User(SQLBase):
         with self.connection.cursor() as cur:
             sql = ("INSERT INTO `userinfo` (`account`, `department`, `name`) "
                    "VALUES (%s, %s, %s)")
-            # TODO(biboy1999):department set here?
+
             para_input = (username, "", name)
             sql_user = (
                 "INSERT INTO `user` (`account_id`, `passwd`, `group_id`, "
@@ -99,6 +99,22 @@ class User(SQLBase):
                    "SET `passwd` = %s "
                    "WHERE `account_id` = %s")
             para_input = (username, password)
+            try:
+                cur.execute(sql, para_input)
+                self.commit()
+                return True
+            except MySQLError as e:
+                self.rollback()
+                logger.error("got error {}, {}".format(e, e.args[0]))
+                logger.error("fail to set user SQL:{}".format(
+                    cur.mogrify(sql, para_input)))
+                return False
+
+    def set_group(self, username, group_id):
+        with self.connection.cursor() as cur:
+            sql = "UPDATE `user` SET `group_id` = %s WHERE `account_id` = %s"
+
+            para_input = (group_id, username)
             try:
                 cur.execute(sql, para_input)
                 self.commit()
