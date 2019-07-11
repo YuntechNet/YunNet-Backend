@@ -54,7 +54,7 @@ RECAPTCHA = {
 Sanic app configuration
 https://sanic.readthedocs.io/en/latest/sanic/deploying.html
 '''
-SANIC_APP: map = {
+SANIC_APP: dict = {
     # 'host': '0.0.0.0',
     # 'port': '8000',
     # 'debug': False,

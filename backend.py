@@ -16,7 +16,7 @@ app.config.from_object(config)
 
 
 @app.listener('before_server_start')
-def init(app, loop):
+async def init(app, loop):
     """
     Initializes aiohttp session for global use  
     Refers to note at: 
@@ -27,7 +27,7 @@ def init(app, loop):
 
 @app.listener('after_server_stop')
 def finish(app, loop):
-    loop.run_until_complete(app.session.close())
+    loop.run_until_complete(app.aiohttp_session.close())
     loop.close()
 
 
@@ -73,4 +73,4 @@ app.config.API_SECURITY_DEFINITIONS = {
 app.blueprint(api)
 
 if __name__ == '__main__':
-    app.run(config.SANIC_APP, debug=True)
+    app.run(**config.SANIC_APP)
