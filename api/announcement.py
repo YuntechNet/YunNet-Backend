@@ -1,3 +1,5 @@
+from pymysql import MySQLError
+from sanic.log import logger
 from sanic.response import json
 from sanic import Blueprint
 from sanic_openapi import doc
@@ -26,6 +28,9 @@ async def bp_announcement(request, *args, **kwargs):
         return json("bad request", 400)
     except KeyError:
         return json("bad request", 400)
+    except MySQLError as e:
+        logger.error('Catch MySQLError:{}'.format(e.args[1]))
+        return json('messages.INTERNAL_SERVER_ERROR', 500)
 
     return response
 

@@ -1,4 +1,5 @@
 import jwt
+from pymysql import MySQLError
 from sanic.log import logger
 from sanic.response import json
 from sanic import Blueprint
@@ -9,17 +10,30 @@ from Base.jwt_payload import jwt_payload
 from Query.user import User
 from Query.permission import Permission
 from hashlib import sha256
+from config import RECAPTCHA
 
 login = Blueprint('login')
 
 
 @login.route('/login', methods=['POST'])
-@doc.consumes(doc.JsonBody({'username': str, 'password': str}),
-              content_type='application/json', location='body')
+@doc.consumes(
+    doc.JsonBody({'recaptcha_token': str, 'username': str, 'password': str}),
+    content_type='application/json', location='body')
 async def bp_login(request):
     try:
         username = request.json['username']
         password = request.json['password']
+        recaptcha_token = request.json['recaptcha_token']
+        # google reCaptcha verify
+        session = request.app.aiohttp_session
+        recaptcha_secret = request.app.config.RECAPTCHA['secret']
+        data = {"secret": recaptcha_secret, "response": recaptcha_token}
+        async with session.post(
+                'https://www.google.com/recaptcha/api/siteverify',
+                data=data) as resp:
+            resp_json = await resp.json()
+            if not resp_json['success']:
+                return json({'message': 'token verify failed'})
 
         # check login permission
         allowed = Permission().check_permission(username, '4701')
@@ -42,4 +56,7 @@ async def bp_login(request):
     except KeyError as e:
         return json({'message': 'Username/Password combination incorrect'},
                     401)
+    except MySQLError as e:
+        logger.error('Catch MySQLError:{}'.format(e.args[1]))
+        return json('messages.INTERNAL_SERVER_ERROR', 500)
     return resp

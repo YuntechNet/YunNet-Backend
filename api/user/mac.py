@@ -1,3 +1,5 @@
+from pymysql import MySQLError
+from sanic.log import logger
 from sanic.response import json
 from sanic import Blueprint
 
@@ -11,5 +13,11 @@ mac = Blueprint('mac')
 @permission('4200')
 async def bp_mac(request, *args, **kwargs):
     username = kwargs.get('username', None)
-    mac_str = MAC().get_mac(username)
+
+    try:
+        mac_str = MAC().get_mac(username)
+    except MySQLError as e:
+        logger.error('Catch MySQLError:{}'.format(e.args[1]))
+        return json('messages.INTERNAL_SERVER_ERROR', 500)
+
     return json({'mac': mac_str})
