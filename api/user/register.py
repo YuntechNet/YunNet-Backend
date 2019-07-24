@@ -32,7 +32,7 @@ async def bp_register(request):
         return json({'message': 'id not found'}, 400)
 
     if userinfo['bed_id'] == bed:
-        if User.set_group(id, '0300'):
+        if User().set_group(id, '0300'):
             resp = json({'message': 'register complete'}, 200)
         else:
             resp = json({'message': 'register fail'}, 500)
