@@ -58,7 +58,7 @@ SANIC_APP: dict = {
     'host': '0.0.0.0',
     'port': '8000',
     # 'debug': False,
-    # 'ssl': None,
+    'ssl': None,
     # 'sock': None,
     # 'workers': 1,
     # 'loop': None,
