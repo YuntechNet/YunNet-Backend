@@ -1,19 +1,14 @@
 from sanic import Blueprint
 
-from .change_password import change_password
-from .info import info
-from .login import login
-from .mac import mac
-from .netflow import netflow
-from .register import register
-from .reset_password import reset_password
+from .user import bp_user
+from .password import bp_password
+from .department import bp_department
+from .bed import bp_bed
+from .ip import bp_ip
 
-
-user = Blueprint.group(change_password, 
-                       info, 
-                       login, 
-                       mac, 
-                       netflow, 
-                       register, 
-                       reset_password, 
-                       url_prefix='/user')
+user = Blueprint.group(bp_user,
+                       bp_password,
+                       bp_department,
+                       bp_bed,
+                       bp_ip,
+                       url_prefix='/user/<uid>')
