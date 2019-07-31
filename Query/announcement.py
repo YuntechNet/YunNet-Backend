@@ -6,7 +6,7 @@ from sanic.log import logger
 from Base.SQL import SQLBase
 
 
-class Announce(SQLBase):
+class Announcement(SQLBase):
     def get_announcement(self, offset=0):
         """get announcement list
 
