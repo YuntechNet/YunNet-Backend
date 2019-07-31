@@ -1,5 +1,7 @@
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
 from sanic import Sanic
 from sanic.log import logger
+from sanic.request import Request
 from sanic.response import json, text, redirect
 from sanic.exceptions import NotFound, MethodNotSupported
 from argparse import ArgumentParser
@@ -13,6 +15,10 @@ import config
 
 app: Sanic = Sanic('YunNet-Backend')
 app.config.from_object(config)
+
+mongo = AsyncIOMotorClient(config.MONGODB_URI)
+log_db: AsyncIOMotorDatabase = mongo['yunnet']
+log_collection: AsyncIOMotorCollection = log_db['log']
 
 
 @app.listener('before_server_start')
@@ -29,6 +35,17 @@ async def init(app, loop):
 def finish(app, loop):
     loop.run_until_complete(app.aiohttp_session.close())
     loop.close()
+
+
+@app.middleware('response')
+def response_middleware(request, response):
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    real_ip = request.headers['X-Forwarded-For']
+    log_entry = {
+        "method": request.method,
+        "ip": real_ip,
+    }
+    result = await log_collection.insert_one(log_entry)
 
 
 @app.route('favicon.ico')

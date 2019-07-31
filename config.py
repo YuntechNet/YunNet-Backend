@@ -34,6 +34,8 @@ SQL_CREDENTIALS = {
     'db': 'db_name',
 }
 
+MONGODB_URI = "mongodb://localhost:27017"
+
 '''
 Session module endpoint configuration
 '''
