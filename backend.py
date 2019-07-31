@@ -1,4 +1,5 @@
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
+from types import SimpleNamespace
 from sanic import Sanic
 from sanic.log import logger
 from sanic.request import Request
@@ -16,9 +17,6 @@ import config
 app: Sanic = Sanic('YunNet-Backend')
 app.config.from_object(config)
 
-mongo = AsyncIOMotorClient(config.MONGODB_URI)
-log_db: AsyncIOMotorDatabase = mongo['yunnet']
-log_collection: AsyncIOMotorCollection = log_db['log']
 
 
 @app.listener('before_server_start')
@@ -29,6 +27,11 @@ async def init(app, loop):
     https://aiohttp.readthedocs.io/en/stable/client_quickstart.html#make-a-request
     """
     app.aiohttp_session = aiohttp.ClientSession(loop=loop)
+    app.mongo = SimpleNamespace()
+    app.mongo.motor_client = AsyncIOMotorClient(config.MONGODB_URI)
+    app.mongo.log_db: AsyncIOMotorDatabase = app.mongo.motor_client['yunnet']
+    app.mongo.log_collection: AsyncIOMotorCollection = app.mongo.log_db['log']
+
 
 
 @app.listener('after_server_stop')
@@ -38,13 +41,20 @@ def finish(app, loop):
 
 
 @app.middleware('response')
-def response_middleware(request, response):
+async def response_middleware(request, response):
     response.headers["X-XSS-Protection"] = "1; mode=block"
-    real_ip = request.headers['X-Forwarded-For']
+    real_ip: str
+    if 'X-Forwarded-For' in request.headers:
+        real_ip = request.headers['X-Forwarded-For']
+    else:
+        real_ip = request.ip
     log_entry = {
         "method": request.method,
         "ip": real_ip,
+        "endpoint": request.path,
+        "query_string": request.query_string,
     }
+    log_collection = request.app.mongo.log_collection
     result = await log_collection.insert_one(log_entry)
 
 
