@@ -6,8 +6,9 @@ name = "pypi"
 [packages]
 aiohttp = "*"
 pyjwt = "*"
-pymysql = "*"
 sanic = "*"
+motor = "*"
+aiomysql = "*"
 
 [dev-packages]
 pycodestyle = "*"
