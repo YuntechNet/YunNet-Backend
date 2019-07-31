@@ -46,11 +46,6 @@ async def app_method_not_supported(request, exception):
     return json("messages.METHOD_NOT_SUPPORTED", status=405)
 
 
-@app.route('/')
-async def redirect_api(request):
-    return redirect('/swagger')
-
-
 # swagger api setup
 app.blueprint(swagger_blueprint)
 
