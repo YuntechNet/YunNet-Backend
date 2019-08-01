@@ -1,4 +1,5 @@
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
+import jwt
 from types import SimpleNamespace
 from sanic import Sanic
 from sanic.log import logger
@@ -40,20 +41,31 @@ def finish(app, loop):
     loop.close()
 
 
-@app.middleware('response')
+@app.middleware("response")
 async def response_middleware(request, response):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     real_ip: str
-    if 'X-Forwarded-For' in request.headers:
-        real_ip = request.headers['X-Forwarded-For']
+    username: str
+    if "X-Forwarded-For" in request.headers:
+        real_ip = request.headers["X-Forwarded-For"]
     else:
         real_ip = request.ip
+    if "Authorization" in request.headers:
+        auth = request.headers["Authorization"].split()
+        if auth[0] == "Bearer":
+            try:
+                jwt_payload = jwt.decode(auth[1], config.JWT['jwtSecret'])
+                username = jwt_payload['username']
+            except:
+                pass
     log_entry = {
         "method": request.method,
         "ip": real_ip,
+        "username": username,
         "endpoint": request.path,
         "query_string": request.query_string,
     }
+    
     log_collection = request.app.mongo.log_collection
     result = await log_collection.insert_one(log_entry)
 
