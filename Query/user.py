@@ -68,7 +68,7 @@ class User():
 
         return data[0]
 
-    def get_password(self, user_id: int) -> str:
+    async def get_password(self, user_id: int) -> str:
         """Get user's password hash
 
         Args:
