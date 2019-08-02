@@ -44,9 +44,8 @@ async def init(app, loop):
 @app.listener('after_server_stop')
 async def finish(app, loop):
     await app.aiohttp_session.close()
-    sql_base = await SQLBase()
-    sql_base.pool.close()
-    await sql_base.pool.wait_closed()
+    SQLBase.pool.close()
+    await SQLBase.pool.wait_closed()
 
 
 @app.middleware("response")
