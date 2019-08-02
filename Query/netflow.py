@@ -1,7 +1,7 @@
-from Base.SQL import SQLBase
+from Base import SQLPool
 
 
-class User(SQLBase):
-    def get_netflow(self, username: str) -> list:
+class User():
+    async def get_netflow(self, username: str) -> list:
         # todo
         return [()]

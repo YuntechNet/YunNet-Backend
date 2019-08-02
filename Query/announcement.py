@@ -3,7 +3,7 @@ import datetime
 from aiomysql import MySQLError
 from sanic.log import logger
 
-from Base.SQL import SQLBase
+from Base import SQLPool
 
 
 class Announcement():
@@ -29,7 +29,7 @@ class Announcement():
         ]
         """
         
-        async with SQLBase.pool.acquire() as conn:
+        async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
                 sql = ("SELECT * FROM `announce` "
                     "ORDER BY `post_time` DESC "
@@ -54,7 +54,7 @@ class Announcement():
         Returns:bool
 
         """
-        async with SQLBase.pool.acquire() as conn:
+        async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
                 sql = ("DELETE FROM `announce` WHERE `title` = %s")
                 para_input = (post_id)
@@ -73,7 +73,7 @@ class Announcement():
 
         dt = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        async with SQLBase.pool.acquire() as conn:
+        async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
                 sql = ("INSERT INTO `announce` values (%s,%s,%s,%s,-1,%s,%s)")
                 para_input = (title, dt, dt, content, poster, top)

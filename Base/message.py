@@ -1,2 +1,2 @@
 def message(msg):
-    return {'message': msg}
+    return {"message": msg}

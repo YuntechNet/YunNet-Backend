@@ -1,9 +1,9 @@
 from pymysql import MySQLError
-from Base.SQL import SQLBase
+from Base import SQLPool
 from sanic.log import logger
 
 
-class Userinfo(SQLBase):
+class Userinfo():
     def get_userinfo(self, user_id: int):
         """Get userinfo by username
 
@@ -25,22 +25,23 @@ class Userinfo(SQLBase):
             )
 
         """
-        with self.connection.cursor() as cursor:
-            sql: str = (
-                "SELECT * FROM `user` WHERE "
-                "`uid` = %s"
-            )
-            para_input = user_id
-            cursor.execute(sql, para_input)
-            data = cursor.fetchone()
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor() as cur:
+                sql: str = (
+                    "SELECT * FROM `user` WHERE "
+                    "`uid` = %s"
+                )
+                para_input = user_id
+                await cur.execute(sql, para_input)
+                data = await cur.fetchone()
 
-            if data is None:
-                return None
+                if data is None:
+                    return None
 
-            key = ['uid', 'username', 'password_hash', 'nick', 'bed',
-                   'department', 'back_mail']
+                key = ['uid', 'username', 'password_hash', 'nick', 'bed',
+                    'department', 'back_mail']
 
-            dicts = dict(zip(key, data))
+                dicts = dict(zip(key, data))
         return dicts
 
     # TODO(biboy1999): WIP management logic

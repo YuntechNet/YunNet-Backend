@@ -1,11 +1,11 @@
 from pymysql import MySQLError
 from sanic.log import logger
 
-from Base.SQL import SQLBase
+from Base import SQLPool
 
 
-class Bed(SQLBase):
-    def get_user_bed_info(self, uid):
+class Bed():
+    async def get_user_bed_info(self, uid):
         '''
 
         Args:
@@ -21,16 +21,17 @@ class Bed(SQLBase):
             }
 
         '''
-        with self.connection.cursor() as cur:
-            sql = ("SELECT b.`bed`,b.`portal` "
-                   "FROM `bed` as b "
-                   "INNER JOIN `user` as u ON b.`bed` = u.`bed` "
-                   "WHERE u.`uid` = %s ")
-            para_input = uid
-            cur.execute(sql, para_input)
-            data = cur.fetchone()
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor() as cur:
+                sql = ("SELECT b.`bed`,b.`portal` "
+                    "FROM `bed` as b "
+                    "INNER JOIN `user` as u ON b.`bed` = u.`bed` "
+                    "WHERE u.`uid` = %s ")
+                para_input = uid
+                await cur.execute(sql, para_input)
+                data = await cur.fetchone()
 
-            key = ["bed", "portal"]
-            dicts = dict(zip(data, key))
+                key = ["bed", "portal"]
+                dicts = dict(zip(data, key))
 
         return dicts

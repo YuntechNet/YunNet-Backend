@@ -1,10 +1,10 @@
 from pymysql import MySQLError
 from sanic.log import logger
-from Base.SQL import SQLBase
+from Base import SQLPool
 
 
-class MAC(SQLBase):
-    def get_mac(self, username: str) -> tuple:
+class MAC():
+    async def get_mac(self, username: str) -> tuple:
         """get mac by username
 
         Args:
@@ -19,18 +19,19 @@ class MAC(SQLBase):
             )
 
         """
-        with self.connection.cursor() as cur:
-            sql = (
-                "SELECT ip.mac FROM userinfo "
-                "INNER JOIN ip ON userinfo.ip_id = ip.ip "
-                "WHERE userinfo.account = %s")
-            para_input = (username)
-            cur.execute(sql, para_input)
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor() as cur:
+                sql = (
+                    "SELECT ip.mac FROM userinfo "
+                    "INNER JOIN ip ON userinfo.ip_id = ip.ip "
+                    "WHERE userinfo.account = %s")
+                para_input = (username)
+                await cur.execute(sql, para_input)
 
-            data = cur.fetchone()
+                data = await cur.fetchone()
         return data[0]
 
-    def set_mac(self, account: str, mac: str) -> bool:
+    async def set_mac(self, account: str, mac: str) -> bool:
         """Set mac by account_id
 
         Args:
@@ -41,19 +42,20 @@ class MAC(SQLBase):
             bool, If set success return True, if catch error return False.
 
         """
-        with self.connection.cursor() as cur:
-            sql = ("UPDATE ip "
-                   "INNER JOIN userinfo ON userinfo.ip_id = ip.ip "
-                   "SET ip.mac = %s "
-                   "WHERE userinfo.account = %s ")
-            para_input = (mac, account)
-            try:
-                cur.execute(sql, para_input)
-                self.commit()
-                return True
-            except MySQLError as e:
-                self.rollback()
-                logger.error("got error {}, {}".format(e, e.args[0]))
-                logger.error("fail to udpate `ip` table SQL:{}".format(
-                    cur.mogrify(sql, para_input)))
-                return False
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor() as cur:
+                sql = ("UPDATE ip "
+                    "INNER JOIN userinfo ON userinfo.ip_id = ip.ip "
+                    "SET ip.mac = %s "
+                    "WHERE userinfo.account = %s ")
+                para_input = (mac, account)
+                try:
+                    await cur.execute(sql, para_input)
+                    await conn.commit()
+                    return True
+                except MySQLError as e:
+                    await conn.rollback()
+                    logger.error("got error {}, {}".format(e, e.args[0]))
+                    logger.error("fail to udpate `ip` table SQL:{}".format(
+                        await cur.mogrify(sql, para_input)))
+                    return False

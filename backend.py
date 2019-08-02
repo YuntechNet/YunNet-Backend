@@ -1,4 +1,4 @@
-from Base.SQL import SQLBase
+from Base import SQLPool
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
 import jwt
 from types import SimpleNamespace
@@ -37,22 +37,22 @@ async def init(app, loop):
     app.mongo.log_db: AsyncIOMotorDatabase = app.mongo.motor_client['yunnet']
     app.mongo.log_collection: AsyncIOMotorCollection = app.mongo.log_db['log']
     #init aiomysql pool
-    await SQLBase(**config.SQL_CREDENTIALS)
+    await SQLPool(**config.SQL_CREDENTIALS)
 
 
 
 @app.listener('after_server_stop')
 async def finish(app, loop):
     await app.aiohttp_session.close()
-    SQLBase.pool.close()
-    await SQLBase.pool.wait_closed()
+    SQLPool.pool.close()
+    await SQLPool.pool.wait_closed()
 
 
 @app.middleware("response")
 async def response_middleware(request, response):
     response.headers["X-XSS-Protection"] = "1; mode=block"
-    real_ip: str
-    username: str
+    real_ip: str = None
+    username: str = None
     if "X-Forwarded-For" in request.headers:
         real_ip = request.headers["X-Forwarded-For"]
     else:

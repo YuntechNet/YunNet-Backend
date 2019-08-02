@@ -1,9 +1,9 @@
 from pymysql import MySQLError
 from sanic.log import logger
-from Base.SQL import SQLBase
+from Base import SQLPool
 
 
-class User(SQLBase):
+class User():
 
     # TODO(biboy1999):WIP management logic
     # def new_user(self, username: str, password: str, name: str,
@@ -44,7 +44,7 @@ class User(SQLBase):
     #                 cur.mogrify(sql_user, para_input2)))
     #             return False
 
-    def get_user_id(self, query: str) -> str:
+    async def get_user_id(self, query: str) -> str:
         """Get actual username by username, bed, ip
 
         Args:
@@ -58,12 +58,13 @@ class User(SQLBase):
                "INNER JOIN `ip`  as i ON b.`ip` = i.`ip` "
                "WHERE %s IN (u.`username`, b.`bed`, i.`ip`)")
         para_input = query
-        with self.connection.cursor() as cur:
-            cur.execute(sql, para_input)
-            data = cur.fetchone()
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(sql, para_input)
+                data = await cur.fetchone()
 
-            if len(data) == 0:
-                return ''
+                if len(data) == 0:
+                    return ''
 
         return data[0]
 
@@ -77,18 +78,19 @@ class User(SQLBase):
             str. User's password hash,if user not found return empty string
 
         """
-        with self.connection.cursor() as cur:
-            sql = ("SELECT `password_hash` "
-                   "FROM `user` "
-                   "WHERE `uid` = %s")
-            para_input = user_id
-            cur.execute(sql, para_input)
-            data = cur.fetchone()
-            if data is None or len(data) == 0:
-                return ''
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor() as cur:
+                sql = ("SELECT `password_hash` "
+                    "FROM `user` "
+                    "WHERE `uid` = %s")
+                para_input = user_id
+                await cur.execute(sql, para_input)
+                data = await cur.fetchone()
+                if data is None or len(data) == 0:
+                    return ''
         return data[0]
 
-    def set_password(self, username: str, password: str) -> bool:
+    async def set_password(self, username: str, password: str) -> bool:
         """Set user password
 
         Args:
@@ -99,21 +101,22 @@ class User(SQLBase):
             bool. If set success return True, if catch error return False.
 
         """
-        with self.connection.cursor() as cur:
-            sql = ("UPDATE `user` "
-                   "SET `password_hash` = %s "
-                   "WHERE `uid` = %s")
-            para_input = (username, password)
-            try:
-                cur.execute(sql, para_input)
-                self.commit()
-                return True
-            except MySQLError as e:
-                self.rollback()
-                logger.error("got error {}, {}".format(e, e.args[0]))
-                logger.error("fail to set user SQL:{}".format(
-                    cur.mogrify(sql, para_input)))
-                return False
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor() as cur:
+                sql = ("UPDATE `user` "
+                    "SET `password_hash` = %s "
+                    "WHERE `uid` = %s")
+                para_input = (username, password)
+                try:
+                    await cur.execute(sql, para_input)
+                    await conn.commit()
+                    return True
+                except MySQLError as e:
+                    await conn.rollback()
+                    logger.error("got error {}, {}".format(e, e.args[0]))
+                    logger.error("fail to set user SQL:{}".format(
+                        await cur.mogrify(sql, para_input)))
+                    return False
 
     # TODO(biboy1999):WIP management logic
     # def set_group(self, username, group_id):
