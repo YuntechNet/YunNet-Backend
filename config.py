@@ -27,11 +27,11 @@ https://pymysql.readthedocs.io/en/latest/modules/connections.html#pymysql.connec
 '''
 
 SQL_CREDENTIALS = {
-    'host': '0.0.0.0',
-    'port': 0,
-    'user': 'username',
+    'host': '127.0.0.1',
+    'port': 3306,
+    'user': 'user',
     'password': 'password',
-    'db': 'db_name',
+    'db': 'yunnet',
 }
 
 MONGODB_URI = "mongodb://localhost:27017"

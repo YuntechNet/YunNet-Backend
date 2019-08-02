@@ -1,3 +1,4 @@
+from Base.SQL import SQLBase
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
 import jwt
 from types import SimpleNamespace
@@ -20,6 +21,7 @@ app.config.from_object(config)
 
 
 
+
 @app.listener('before_server_start')
 async def init(app, loop):
     """
@@ -27,18 +29,24 @@ async def init(app, loop):
     Refers to note at: 
     https://aiohttp.readthedocs.io/en/stable/client_quickstart.html#make-a-request
     """
+    #init aiohttp session
     app.aiohttp_session = aiohttp.ClientSession(loop=loop)
+    #init mongo log
     app.mongo = SimpleNamespace()
     app.mongo.motor_client = AsyncIOMotorClient(config.MONGODB_URI)
     app.mongo.log_db: AsyncIOMotorDatabase = app.mongo.motor_client['yunnet']
     app.mongo.log_collection: AsyncIOMotorCollection = app.mongo.log_db['log']
+    #init aiomysql pool
+    await SQLBase(**config.SQL_CREDENTIALS)
 
 
 
 @app.listener('after_server_stop')
-def finish(app, loop):
-    loop.run_until_complete(app.aiohttp_session.close())
-    loop.close()
+async def finish(app, loop):
+    await app.aiohttp_session.close()
+    sql_base = await SQLBase()
+    sql_base.pool.close()
+    await sql_base.pool.wait_closed()
 
 
 @app.middleware("response")
@@ -67,7 +75,7 @@ async def response_middleware(request, response):
     }
     
     log_collection = request.app.mongo.log_collection
-    result = await log_collection.insert_one(log_entry)
+    await log_collection.insert_one(log_entry)
 
 
 @app.route('favicon.ico')
