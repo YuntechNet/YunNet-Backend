@@ -37,7 +37,7 @@ async def init(app, loop):
     app.mongo.log_db: AsyncIOMotorDatabase = app.mongo.motor_client['yunnet']
     app.mongo.log_collection: AsyncIOMotorCollection = app.mongo.log_db['log']
     #init aiomysql pool
-    await SQLPool(**config.SQL_CREDENTIALS)
+    await SQLPool.init_pool(**config.SQL_CREDENTIALS)
 
 
 
