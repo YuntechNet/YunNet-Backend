@@ -1,2 +1,3 @@
-from .message import message
+from . import messages
 from .SQLPool import SQLPool
+from .aiohttpSession import aiohttpSession

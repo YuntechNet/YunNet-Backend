@@ -1,6 +1,7 @@
-from Base import SQLPool
+from Base import aiohttpSession, SQLPool, messages
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
 import jwt
+import traceback
 from types import SimpleNamespace
 from sanic import Sanic
 from sanic.log import logger
@@ -8,6 +9,7 @@ from sanic.request import Request
 from sanic.response import json, text, redirect
 from sanic.exceptions import NotFound, MethodNotSupported
 from argparse import ArgumentParser
+
 import aiohttp
 
 from sanic_openapi import swagger_blueprint
@@ -29,21 +31,29 @@ async def init(app, loop):
     Refers to note at: 
     https://aiohttp.readthedocs.io/en/stable/client_quickstart.html#make-a-request
     """
-    #init aiohttp session
-    app.aiohttp_session = aiohttp.ClientSession(loop=loop)
-    #init mongo log
-    app.mongo = SimpleNamespace()
-    app.mongo.motor_client = AsyncIOMotorClient(config.MONGODB_URI)
-    app.mongo.log_db: AsyncIOMotorDatabase = app.mongo.motor_client['yunnet']
-    app.mongo.log_collection: AsyncIOMotorCollection = app.mongo.log_db['log']
-    #init aiomysql pool
-    await SQLPool.init_pool(**config.SQL_CREDENTIALS)
+    try:
+        #init aiohttp session
+        app.aiohttp_session = aiohttp.ClientSession(loop=loop)
+        await aiohttpSession.init({"limit": 200})
+        #init mongo log
+        app.mongo = SimpleNamespace()
+        app.mongo.motor_client = AsyncIOMotorClient(config.MONGODB_URI)
+        app.mongo.log_db: AsyncIOMotorDatabase = app.mongo.motor_client["yunnet"]
+        app.mongo.log_collection: AsyncIOMotorCollection = app.mongo.log_db["log"]
+        #init aiomysql pool
+        await SQLPool.init_pool(**config.SQL_CREDENTIALS)
+    except Exception as ex:
+        if config.WEBHOOK_URL is not "":
+            print("Sending exceptions...")
+            payload = {"text": traceback.format_exc()}
+            await aiohttpSession.session.post(config.WEBHOOK_URL,json=payload)
+        raise ex
 
 
-
-@app.listener('after_server_stop')
+@app.listener("after_server_stop")
 async def finish(app, loop):
     await app.aiohttp_session.close()
+    await aiohttpSession.close()
     SQLPool.pool.close()
     await SQLPool.pool.wait_closed()
 
@@ -71,6 +81,7 @@ async def response_middleware(request, response):
         "username": username,
         "endpoint": request.path,
         "query_string": request.query_string,
+        "http_status": response.status
     }
     
     log_collection = request.app.mongo.log_collection
@@ -83,14 +94,20 @@ async def app_favicon(request):
 
 
 @app.exception(NotFound)
-async def app_notfound(request, exception):
-    return json("messages.INVALID_ENDPOINT", status=404)
+async def app_notfound(request, ex):
+    return json(messages.INVALID_ENDPOINT, status=404)
 
 
 @app.exception(MethodNotSupported)
-async def app_method_not_supported(request, exception):
-    return json("messages.METHOD_NOT_SUPPORTED", status=405)
+async def app_method_not_supported(request, ex):
+    return json(messages.METHOD_NOT_SUPPORTED, status=405)
 
+@app.exception(Exception)
+async def app_other_error(request, ex):
+    if config.WEBHOOK_URL != "":
+        payload = {"text": traceback.format_exc()}
+        await aiohttpSession.session.post(config.WEBHOOK_URL,json=payload)
+    return json(messages.INTERNAL_SERVER_ERROR, status=500)
 
 # swagger api setup
 app.blueprint(swagger_blueprint)

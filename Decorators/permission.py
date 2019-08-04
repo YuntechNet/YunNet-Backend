@@ -2,7 +2,7 @@ from functools import wraps
 from sanic.log import logger
 from sanic.response import json
 import jwt
-from Base import message
+from Base import messages
 from Query import Permission
 
 
@@ -23,7 +23,7 @@ def permission(code):
             config = request.app.config
 
             if 'Authorization' not in request.headers:
-                return json({'message': 'invalid_session'}, 403)
+                return json(messages.INVALID_SESSION, 403)
 
             auth_header = request.headers['Authorization']
 
@@ -36,12 +36,12 @@ def permission(code):
                     token, config.JWT['jwtSecret'],
                     algorithms=config.JWT['algorithm']
                 )
-            except jwt.ExpiredSignatureError as e:
-                logger.info(e)
-                return json(message('session_expired'), 401)
-            except jwt.PyJWTError as e:
-                logger.warning(e)
-                return json(message('invalid_session'), 401)
+            except jwt.ExpiredSignatureError as ex:
+                logger.info(ex)
+                return json(messages.SESSION_EXPIRED, 401)
+            except jwt.PyJWTError as ex:
+                logger.warning(ex)
+                return json(messages.INVALID_SESSION, 401)
 
             query = Permission()
 
@@ -54,7 +54,7 @@ def permission(code):
                 response = await f(request, username=username, *args, **kwargs)
                 return response
             else:
-                return json(message('no_permission'), 403)
+                return json(messages.NO_PERMISSION, 403)
 
         return permission_decorator
 

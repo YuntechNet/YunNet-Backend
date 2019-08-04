@@ -27,14 +27,14 @@ https://pymysql.readthedocs.io/en/latest/modules/connections.html#pymysql.connec
 '''
 
 SQL_CREDENTIALS = {
-    'host': '127.0.0.1',
+    'host': 'db',
     'port': 3306,
     'user': 'user',
     'password': 'password',
     'db': 'yunnet',
 }
 
-MONGODB_URI = "mongodb://localhost:27017"
+MONGODB_URI = "mongodb://mongo:27017"
 
 '''
 Session module endpoint configuration
@@ -51,6 +51,12 @@ RECAPTCHA = {
     'enabled': True,
     'secret': '',
 }
+
+'''
+Set your webhook link here for exception logging.
+Leave empty to disable.
+'''
+WEBHOOK_URL = ""
 
 '''
 Sanic app configuration
