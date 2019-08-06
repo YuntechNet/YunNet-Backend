@@ -1,4 +1,4 @@
-from Base import aiohttpSession, SQLPool, messages
+from Base import aiohttpSession, SMTP, SQLPool, messages
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
 import jwt
 import traceback
@@ -35,18 +35,20 @@ async def init(app, loop):
         #init aiohttp session
         app.aiohttp_session = aiohttp.ClientSession(loop=loop)
         await aiohttpSession.init({"limit": 200})
+        #init SMTP client
+        SMTP.init(config.SMTP_CLIENT_PARAMETERS,config.SMTP_CREDENTIALS)
         #init mongo log
         app.mongo = SimpleNamespace()
         app.mongo.motor_client = AsyncIOMotorClient(config.MONGODB_URI)
-        app.mongo.log_db: AsyncIOMotorDatabase = app.mongo.motor_client["yunnet"]
-        app.mongo.log_collection: AsyncIOMotorCollection = app.mongo.log_db["log"]
+        app.mongo.log_db = app.mongo.motor_client["yunnet"]
+        app.mongo.log_collection = app.mongo.log_db["log"]
         #init aiomysql pool
         await SQLPool.init_pool(**config.SQL_CREDENTIALS)
     except Exception as ex:
-        if config.WEBHOOK_URL is not "":
+        for url in config.WEBHOOK_URL:
             print("Sending exceptions...")
-            payload = {"text": traceback.format_exc()}
-            await aiohttpSession.session.post(config.WEBHOOK_URL,json=payload)
+            payload = {"text": "```%s```" % traceback.format_exc()}
+            await aiohttpSession.session.post(url,json=payload)
         raise ex
 
 
@@ -95,19 +97,19 @@ async def app_favicon(request):
 
 @app.exception(NotFound)
 async def app_notfound(request, ex):
-    return json(messages.INVALID_ENDPOINT, status=404)
+    return messages.INVALID_ENDPOINT
 
 
 @app.exception(MethodNotSupported)
 async def app_method_not_supported(request, ex):
-    return json(messages.METHOD_NOT_SUPPORTED, status=405)
+    return messages.METHOD_NOT_SUPPORTED
 
 @app.exception(Exception)
 async def app_other_error(request, ex):
-    if config.WEBHOOK_URL != "":
-        payload = {"text": traceback.format_exc()}
-        await aiohttpSession.session.post(config.WEBHOOK_URL,json=payload)
-    return json(messages.INTERNAL_SERVER_ERROR, status=500)
+    for url in config.WEBHOOK_URL:
+        payload = {"text": "```%s```" % traceback.format_exc()}
+        await aiohttpSession.session.post(url,json=payload)
+    return messages.INTERNAL_SERVER_ERROR
 
 # swagger api setup
 app.blueprint(swagger_blueprint)
