@@ -9,11 +9,13 @@ pyjwt = "*"
 sanic = "*"
 motor = "*"
 aiomysql = "*"
+aiosmtplib = "*"
 
 [dev-packages]
 pycodestyle = "*"
 pytest-cov = "*"
 sanic-openapi = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.7"

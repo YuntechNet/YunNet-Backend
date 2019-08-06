@@ -22,10 +22,23 @@ JWT = {
 }
 
 '''
+SMTP Client parameters
+'''
+SMTP_CLIENT_PARAMETERS = {
+    'host': '',
+    'port': 465,
+    'use_tls': True
+}
+SMTP_CREDENTIALS = {
+    'username': '',
+    'password': '',
+
+}
+
+'''
 SQL_CREDENTIALS is the parameters of Connection constructor in PyMySQL
 https://pymysql.readthedocs.io/en/latest/modules/connections.html#pymysql.connections.Connection
 '''
-
 SQL_CREDENTIALS = {
     'host': 'db',
     'port': 3306,
@@ -34,6 +47,9 @@ SQL_CREDENTIALS = {
     'db': 'yunnet',
 }
 
+'''
+Setup MongoDB for logging
+'''
 MONGODB_URI = "mongodb://mongo:27017"
 
 '''
@@ -56,7 +72,7 @@ RECAPTCHA = {
 Set your webhook link here for exception logging.
 Leave empty to disable.
 '''
-WEBHOOK_URL = ""
+WEBHOOK_URL = []
 
 '''
 Sanic app configuration
