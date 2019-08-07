@@ -1,12 +1,13 @@
 from sanic.response import json
 
+
 def msg(msg):
     return {"message": msg}
 
 
-#user login
+# user login
 LOGIN_FAILED = json(msg("LOGIN_FAILED"), status=401)
-#user activation
+# user activation
 ACTIVATION_SUCCESS = json(msg("ACTIVATION_SUCCESS"))
 ACTIVATION_FAILED = json(msg("ACTIVATION_FAILED"), status=401)
 INVALID_SESSION = json(msg("INVALID_SESSION"), status=401)

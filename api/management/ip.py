@@ -6,18 +6,14 @@ from sanic_openapi import doc
 
 from Query.ip import Ip
 
-bp_ip = Blueprint('management-ip', url_prefix='/ip')
+bp_ip = Blueprint("management-ip", url_prefix="/ip")
 
 
 @doc.summary("Query IP managed by the switch")
 @doc.consumes(
-    doc.JsonBody(
-        {
-            "switch": str,
-            "mode": int,  # optional
-            "status": int  # optional
-        }
-    ), content_type="application/json", location="body"
+    doc.JsonBody({"switch": str, "mode": int, "status": int}),  # optional  # optional
+    content_type="application/json",
+    location="body",
 )
 @doc.produces(
     [
@@ -28,12 +24,12 @@ bp_ip = Blueprint('management-ip', url_prefix='/ip')
             "update": int,
             "port": int,
             "port_type": int,
-            "switch": str
+            "switch": str,
         }
-    ]
-    , content_type="application/json"
+    ],
+    content_type="application/json",
 )
-@bp_ip.route('/', methods=['GET', 'POST'])
+@bp_ip.route("/", methods=["GET", "POST"])
 def ip_get(request):
     try:
         switch = request.json["switch"]
@@ -62,6 +58,6 @@ def ip_get(request):
 #         ]
 #     ), content_type="application/json", location="body"
 # )
-@bp_ip.route('/', methods=['PATCH'])
+@bp_ip.route("/", methods=["PATCH"])
 def ip_post(request: Request):
     return json({})

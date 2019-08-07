@@ -6,13 +6,13 @@ from sanic.log import logger
 from Base import SQLPool
 
 
-class Permission():
+class Permission:
     async def check_permission(self, username, code) -> bool:
         """Check if user have the required permission
 
         """
 
-        sql = ("")
+        sql = ""
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
                 para_input = (username, username, code, code, code)

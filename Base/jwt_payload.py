@@ -11,8 +11,8 @@ def jwt_payload(username: str):
     """
     # RFC 7519
     payload = {
-        'iat': datetime.utcnow(),
-        'exp': datetime.utcnow() + timedelta(days=1),
-        'username': username,
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(days=1),
+        "username": username,
     }
     return payload

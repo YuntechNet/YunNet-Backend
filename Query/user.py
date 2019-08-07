@@ -3,7 +3,7 @@ from sanic.log import logger
 from Base import SQLPool
 
 
-class User():
+class User:
 
     # TODO(biboy1999):WIP management logic
     # def new_user(self, username: str, password: str, name: str,
@@ -52,11 +52,13 @@ class User():
 
         Returns:str, username, if not found return empty string.
         """
-        sql = ("SELECT u.`uid` "
-               "FROM `user` as u "
-               "INNER JOIN `bed` as b ON u.`bed` = b.`bed` "
-               "INNER JOIN `ip`  as i ON b.`ip` = i.`ip` "
-               "WHERE %s IN (u.`username`, b.`bed`, i.`ip`)")
+        sql = (
+            "SELECT u.`uid` "
+            "FROM `user` as u "
+            "INNER JOIN `bed` as b ON u.`bed` = b.`bed` "
+            "INNER JOIN `ip`  as i ON b.`ip` = i.`ip` "
+            "WHERE %s IN (u.`username`, b.`bed`, i.`ip`)"
+        )
         para_input = query
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
@@ -64,7 +66,7 @@ class User():
                 data = await cur.fetchone()
 
                 if len(data) == 0:
-                    return ''
+                    return ""
 
         return data[0]
 
@@ -80,14 +82,12 @@ class User():
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = ("SELECT `password_hash` "
-                    "FROM `user` "
-                    "WHERE `uid` = %s")
+                sql = "SELECT `password_hash` " "FROM `user` " "WHERE `uid` = %s"
                 para_input = user_id
                 await cur.execute(sql, para_input)
                 data = await cur.fetchone()
                 if data is None or len(data) == 0:
-                    return ''
+                    return ""
         return data[0]
 
     async def set_password(self, username: str, password: str) -> bool:
@@ -103,9 +103,7 @@ class User():
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = ("UPDATE `user` "
-                    "SET `password_hash` = %s "
-                    "WHERE `uid` = %s")
+                sql = "UPDATE `user` " "SET `password_hash` = %s " "WHERE `uid` = %s"
                 para_input = (username, password)
                 try:
                     await cur.execute(sql, para_input)
@@ -114,8 +112,11 @@ class User():
                 except MySQLError as e:
                     await conn.rollback()
                     logger.error("got error {}, {}".format(e, e.args[0]))
-                    logger.error("fail to set user SQL:{}".format(
-                        await cur.mogrify(sql, para_input)))
+                    logger.error(
+                        "fail to set user SQL:{}".format(
+                            await cur.mogrify(sql, para_input)
+                        )
+                    )
                     return False
 
     # TODO(biboy1999):WIP management logic

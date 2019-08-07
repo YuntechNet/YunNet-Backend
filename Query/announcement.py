@@ -6,7 +6,7 @@ from sanic.log import logger
 from Base import SQLPool
 
 
-class Announcement():
+class Announcement:
     async def get_announcement(self, offset=0):
         """get announcement list
 
@@ -28,18 +28,27 @@ class Announcement():
             },
         ]
         """
-        
+
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = ("SELECT * FROM `announce` "
+                sql = (
+                    "SELECT * FROM `announce` "
                     "ORDER BY `post_time` DESC "
-                    "LIMIT %s , 10")
-                para_input = (offset * 5)
+                    "LIMIT %s , 10"
+                )
+                para_input = offset * 5
                 await cur.execute(sql, para_input)
 
                 data = await cur.fetchall()
-                key = ['title', 'post_time', 'last_edit_time', 'content',
-                    'delete_count', 'poster_id', 'top']
+                key = [
+                    "title",
+                    "post_time",
+                    "last_edit_time",
+                    "content",
+                    "delete_count",
+                    "poster_id",
+                    "top",
+                ]
 
                 dicts = [dict(zip(key, d)) for d in data]
 
@@ -56,8 +65,8 @@ class Announcement():
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = ("DELETE FROM `announce` WHERE `title` = %s")
-                para_input = (post_id)
+                sql = "DELETE FROM `announce` WHERE `title` = %s"
+                para_input = post_id
                 try:
                     await cur.execute(sql, para_input)
                     await conn.commit()
@@ -65,17 +74,20 @@ class Announcement():
                 except MySQLError as e:
                     await conn.rollback()
                     logger.error("got error {}, {}".format(e, e.args[0]))
-                    logger.error("fail to delete `announce` table SQL:{}".format(
-                        await cur.mogrify(sql, para_input)))
+                    logger.error(
+                        "fail to delete `announce` table SQL:{}".format(
+                            await cur.mogrify(sql, para_input)
+                        )
+                    )
                     return False
 
     async def add_announcement(self, title, content, poster, top):
 
-        dt = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = ("INSERT INTO `announce` values (%s,%s,%s,%s,-1,%s,%s)")
+                sql = "INSERT INTO `announce` values (%s,%s,%s,%s,-1,%s,%s)"
                 para_input = (title, dt, dt, content, poster, top)
                 try:
                     await cur.execute(sql, para_input)
@@ -84,6 +96,9 @@ class Announcement():
                 except MySQLError as e:
                     await conn.rollback()
                     logger.error("got error {}, {}".format(e, e.args[0]))
-                    logger.error("fail to insert `announce` table SQL:{}".format(
-                        await cur.mogrify(sql, para_input)))
+                    logger.error(
+                        "fail to insert `announce` table SQL:{}".format(
+                            await cur.mogrify(sql, para_input)
+                        )
+                    )
                     return False

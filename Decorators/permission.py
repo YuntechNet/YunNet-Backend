@@ -22,19 +22,18 @@ def permission(code):
 
             config = request.app.config
 
-            if 'Authorization' not in request.headers:
+            if "Authorization" not in request.headers:
                 return json(messages.INVALID_SESSION, 403)
 
-            auth_header = request.headers['Authorization']
+            auth_header = request.headers["Authorization"]
 
-            bearer = auth_header.split(' ', 1)
+            bearer = auth_header.split(" ", 1)
             token = bearer[1]
 
             payload = None
             try:
                 payload = jwt.decode(
-                    token, config.JWT['jwtSecret'],
-                    algorithms=config.JWT['algorithm']
+                    token, config.JWT["jwtSecret"], algorithms=config.JWT["algorithm"]
                 )
             except jwt.ExpiredSignatureError as ex:
                 logger.info(ex)
@@ -45,7 +44,7 @@ def permission(code):
 
             query = Permission()
 
-            username = payload['username']
+            username = payload["username"]
 
             is_authorized = query.check_permission(username, code)
 

@@ -10,12 +10,14 @@ sanic = "*"
 motor = "*"
 aiomysql = "*"
 aiosmtplib = "*"
+sanic-limiter = "*"
 
 [dev-packages]
 pycodestyle = "*"
 pytest-cov = "*"
 sanic-openapi = "*"
 pytest = "*"
+black = "*"
 
 [requires]
 python_version = "3.7"

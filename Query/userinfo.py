@@ -3,7 +3,7 @@ from Base import SQLPool
 from sanic.log import logger
 
 
-class Userinfo():
+class Userinfo:
     async def get_userinfo(self, user_id: int):
         """Get userinfo by username
 
@@ -27,10 +27,7 @@ class Userinfo():
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql: str = (
-                    "SELECT * FROM `user` WHERE "
-                    "`uid` = %s"
-                )
+                sql: str = ("SELECT * FROM `user` WHERE " "`uid` = %s")
                 para_input = user_id
                 await cur.execute(sql, para_input)
                 data = await cur.fetchone()
@@ -38,8 +35,15 @@ class Userinfo():
                 if data is None:
                     return None
 
-                key = ['uid', 'username', 'password_hash', 'nick', 'bed',
-                    'department', 'back_mail']
+                key = [
+                    "uid",
+                    "username",
+                    "password_hash",
+                    "nick",
+                    "bed",
+                    "department",
+                    "back_mail",
+                ]
 
                 dicts = dict(zip(key, data))
         return dicts

@@ -1,11 +1,13 @@
 import smtplib
 
+
 class SMTP:
     client: smtplib.SMTP = None
 
-    '''
+    """
     
-    '''
+    """
+
     @staticmethod
     async def init(client_parameters, login_parameters):
         if client is not None:

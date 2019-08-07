@@ -1,9 +1,11 @@
 import aiomysql
 
+
 class SQLPool:
     """
     Create Pool object from parameters
     """
+
     pool: aiomysql.Pool = None
 
     @staticmethod
@@ -15,4 +17,3 @@ class SQLPool:
         if SQLPool.pool == None:
             SQLPool.pool = await aiomysql.create_pool(*args, **kwargs)
         return SQLPool
-
