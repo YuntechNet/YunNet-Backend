@@ -3,7 +3,7 @@ from sanic.log import logger
 from Base import SQLPool
 
 
-class MAC():
+class MAC:
     async def get_mac(self, username: str) -> tuple:
         """get mac by username
 
@@ -24,8 +24,9 @@ class MAC():
                 sql = (
                     "SELECT ip.mac FROM userinfo "
                     "INNER JOIN ip ON userinfo.ip_id = ip.ip "
-                    "WHERE userinfo.account = %s")
-                para_input = (username)
+                    "WHERE userinfo.account = %s"
+                )
+                para_input = username
                 await cur.execute(sql, para_input)
 
                 data = await cur.fetchone()
@@ -44,10 +45,12 @@ class MAC():
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = ("UPDATE ip "
+                sql = (
+                    "UPDATE ip "
                     "INNER JOIN userinfo ON userinfo.ip_id = ip.ip "
                     "SET ip.mac = %s "
-                    "WHERE userinfo.account = %s ")
+                    "WHERE userinfo.account = %s "
+                )
                 para_input = (mac, account)
                 try:
                     await cur.execute(sql, para_input)
@@ -56,6 +59,9 @@ class MAC():
                 except MySQLError as e:
                     await conn.rollback()
                     logger.error("got error {}, {}".format(e, e.args[0]))
-                    logger.error("fail to udpate `ip` table SQL:{}".format(
-                        await cur.mogrify(sql, para_input)))
+                    logger.error(
+                        "fail to udpate `ip` table SQL:{}".format(
+                            await cur.mogrify(sql, para_input)
+                        )
+                    )
                     return False

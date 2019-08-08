@@ -19,13 +19,13 @@ async def verify_recaptcha(
     Returns:
         bool -- True if reCaptcha verification is success
     """
-    recaptcha_data = {'secret': secret, 'response': g_recaptcha_response}
+    recaptcha_data = {"secret": secret, "response": g_recaptcha_response}
     async with aiohttp_session.post(
         RECAPTCHA_ENDPOINT, data=recaptcha_data
     ) as response:
         response: ClientResponse = response
         json_response = await response.json()
-        if json_response['success']:
+        if json_response["success"]:
             return True
         else:
             return False

@@ -19,7 +19,7 @@ class aiohttpSession:
     async def init(
         tcp_connecter_args: dict = dict(), client_session_args: dict = dict()
     ):
-        if aiohttpSession.session is None:
+        if aiohttpSession.session == None:
             connector = aiohttp.TCPConnector(**tcp_connecter_args)
             client_session_args["connector"] = connector
             aiohttpSession.session = aiohttp.ClientSession(**client_session_args)

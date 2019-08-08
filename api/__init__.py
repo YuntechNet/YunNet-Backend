@@ -6,5 +6,6 @@ from .announcement import bp_announcement
 from .token import bp_token
 from .netflow import bp_netflow
 
-api = Blueprint.group(user, management, bp_announcement, bp_token, bp_netflow,
-                      url_prefix='/api')
+api = Blueprint.group(
+    user, management, bp_announcement, bp_token, bp_netflow, url_prefix="/api"
+)
