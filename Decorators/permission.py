@@ -43,15 +43,13 @@ def permission(code):
                 logger.warning(ex)
                 return json(messages.INVALID_SESSION, 401)
 
-            query = Permission()
-
             username = payload['username']
 
-            is_authorized = query.check_permission(username, code)
+            is_authorized = await Permission().check_permission(username, code)
 
             if is_authorized:
 
-                response = await f(request, username=username, *args, **kwargs)
+                response = await f(request, *args, **kwargs)
                 return response
             else:
                 return json(messages.NO_PERMISSION, 403)

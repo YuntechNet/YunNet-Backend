@@ -1,5 +1,6 @@
 from Base import aiohttpSession, SQLPool, messages
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, \
+    AsyncIOMotorCollection
 import jwt
 import traceback
 from types import SimpleNamespace
@@ -22,8 +23,6 @@ app: Sanic = Sanic('YunNet-Backend')
 app.config.from_object(config)
 
 
-
-
 @app.listener('before_server_start')
 async def init(app, loop):
     """
@@ -32,21 +31,21 @@ async def init(app, loop):
     https://aiohttp.readthedocs.io/en/stable/client_quickstart.html#make-a-request
     """
     try:
-        #init aiohttp session
+        # init aiohttp session
         app.aiohttp_session = aiohttp.ClientSession(loop=loop)
         await aiohttpSession.init({"limit": 200})
-        #init mongo log
+        # init mongo log
         app.mongo = SimpleNamespace()
         app.mongo.motor_client = AsyncIOMotorClient(config.MONGODB_URI)
         app.mongo.log_db: AsyncIOMotorDatabase = app.mongo.motor_client["yunnet"]
         app.mongo.log_collection: AsyncIOMotorCollection = app.mongo.log_db["log"]
-        #init aiomysql pool
+        # init aiomysql pool
         await SQLPool.init_pool(**config.SQL_CREDENTIALS)
     except Exception as ex:
         if config.WEBHOOK_URL is not "":
             print("Sending exceptions...")
             payload = {"text": traceback.format_exc()}
-            await aiohttpSession.session.post(config.WEBHOOK_URL,json=payload)
+            await aiohttpSession.session.post(config.WEBHOOK_URL, json=payload)
         raise ex
 
 
@@ -83,7 +82,7 @@ async def response_middleware(request, response):
         "query_string": request.query_string,
         "http_status": response.status
     }
-    
+
     log_collection = request.app.mongo.log_collection
     await log_collection.insert_one(log_entry)
 
@@ -101,6 +100,7 @@ async def app_notfound(request, ex):
 @app.exception(MethodNotSupported)
 async def app_method_not_supported(request, ex):
     return json(messages.METHOD_NOT_SUPPORTED, status=405)
+
 
 @app.exception(Exception)
 async def app_other_error(request, ex):

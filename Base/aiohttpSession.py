@@ -1,5 +1,6 @@
 import aiohttp
 
+
 class aiohttpSession:
     """
     Create Pool object from parameters
@@ -11,14 +12,16 @@ class aiohttpSession:
             Parameters for ClientSession object
             (connector key value will be ignored)
     """
+
     session: aiohttp.ClientSession = None
 
-
     @staticmethod
-    async def init(tcp_connecter_args: dict = dict(), client_session_args: dict = dict()):
-        if aiohttpSession.session == None:
+    async def init(
+        tcp_connecter_args: dict = dict(), client_session_args: dict = dict()
+    ):
+        if aiohttpSession.session is None:
             connector = aiohttp.TCPConnector(**tcp_connecter_args)
-            client_session_args['connector'] = connector
+            client_session_args["connector"] = connector
             aiohttpSession.session = aiohttp.ClientSession(**client_session_args)
         return aiohttpSession
 

@@ -4,9 +4,9 @@ from sanic.log import logger
 from Base import SQLPool
 
 
-class Bed():
-    async def get_user_bed_info(self, uid):
-        '''
+class Bed:
+    async def get_user_bed_info(self, username):
+        """
 
         Args:
             uid: user_id
@@ -20,18 +20,26 @@ class Bed():
 
             }
 
-        '''
+        """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = ("SELECT b.`bed`,b.`portal` "
-                    "FROM `bed` as b "
-                    "INNER JOIN `user` as u ON b.`bed` = u.`bed` "
-                    "WHERE u.`uid` = %s ")
-                para_input = uid
+                sql = (
+                    "SELECT i.description, ip_type_id "
+                    "FROM `user` AS u "
+                    "INNER JOIN `ip` AS i ON i.uid = u.uid "
+                    "WHERE u.username = %s "
+                    "AND (i.ip_type_id = 0 OR i.ip_type_id = 1)"
+                )
+                para_input = username
                 await cur.execute(sql, para_input)
+
                 data = await cur.fetchone()
 
-                key = ["bed", "portal"]
-                dicts = dict(zip(data, key))
+                if data is None:
+                    return None
+
+                bed = data[0].split(".")
+
+                dicts = {"portal": bed[0], "bed": bed[1], "ip_type": data[1]}
 
         return dicts

@@ -3,7 +3,7 @@ from sanic.log import logger
 from Base import SQLPool
 
 
-class User():
+class User:
 
     # TODO(biboy1999):WIP management logic
     # def new_user(self, username: str, password: str, name: str,
@@ -44,35 +44,38 @@ class User():
     #                 cur.mogrify(sql_user, para_input2)))
     #             return False
 
-    async def get_user_id(self, query: str) -> str:
-        """Get actual username by username, bed, ip
+    # TODO(biboy1999):
+    # async def get_user_id(self, query: str) -> str:
+    #     """Get actual username by username, bed, ip
+    #
+    #     Args:
+    #         query -- username, bed, or IP
+    #
+    #     Returns:str, username, if not found return empty string.
+    #     """
+    #     sql = (
+    #         "SELECT u.`uid` "
+    #         "FROM `user` as u "
+    #         "INNER JOIN `bed` as b ON u.`bed` = b.`bed` "
+    #         "INNER JOIN `ip`  as i ON b.`ip` = i.`ip` "
+    #         "WHERE %s IN (u.`username`, b.`bed`, i.`ip`)"
+    #     )
+    #     para_input = query
+    #     async with SQLPool.acquire() as conn:
+    #         async with conn.cursor() as cur:
+    #             await cur.execute(sql, para_input)
+    #             data = await cur.fetchone()
+    #
+    #             if len(data) == 0:
+    #                 return ""
+    #
+    #     return data[0]
 
-        Args:
-            query -- username, bed, or IP
-
-        Returns:str, username, if not found return empty string.
-        """
-        sql = ("SELECT u.`uid` "
-               "FROM `user` as u "
-               "INNER JOIN `bed` as b ON u.`bed` = b.`bed` "
-               "INNER JOIN `ip`  as i ON b.`ip` = i.`ip` "
-               "WHERE %s IN (u.`username`, b.`bed`, i.`ip`)")
-        para_input = query
-        async with SQLPool.acquire() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute(sql, para_input)
-                data = await cur.fetchone()
-
-                if len(data) == 0:
-                    return ''
-
-        return data[0]
-
-    async def get_password(self, user_id: int) -> str:
+    async def get_password(self, username: str) -> str:
         """Get user's password hash
 
         Args:
-            user_id: user_id
+            username: username
 
         Returns:
             str. User's password hash,if user not found return empty string
@@ -80,14 +83,12 @@ class User():
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = ("SELECT `password_hash` "
-                    "FROM `user` "
-                    "WHERE `uid` = %s")
-                para_input = user_id
+                sql = "SELECT `password_hash` FROM `user` WHERE `username` = %s"
+                para_input = username
                 await cur.execute(sql, para_input)
                 data = await cur.fetchone()
                 if data is None or len(data) == 0:
-                    return ''
+                    return ""
         return data[0]
 
     async def set_password(self, username: str, password: str) -> bool:
@@ -103,10 +104,8 @@ class User():
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = ("UPDATE `user` "
-                    "SET `password_hash` = %s "
-                    "WHERE `uid` = %s")
-                para_input = (username, password)
+                sql = "UPDATE `user` SET `password_hash` = %s WHERE `username` = %s"
+                para_input = (password, username)
                 try:
                     await cur.execute(sql, para_input)
                     await conn.commit()
@@ -114,23 +113,32 @@ class User():
                 except MySQLError as e:
                     await conn.rollback()
                     logger.error("got error {}, {}".format(e, e.args[0]))
-                    logger.error("fail to set user SQL:{}".format(
-                        await cur.mogrify(sql, para_input)))
+                    logger.error(
+                        "fail to set user SQL:{}".format(
+                            await cur.mogrify(sql, para_input)
+                        )
+                    )
                     return False
 
-    # TODO(biboy1999):WIP management logic
-    # def set_group(self, username, group_id):
-    #     with self.connection.cursor() as cur:
-    #         sql = "UPDATE `user` SET `group_id` = %s WHERE `account_id` = %s"
-    #
-    #         para_input = (group_id, username)
-    #         try:
-    #             cur.execute(sql, para_input)
-    #             self.commit()
-    #             return True
-    #         except MySQLError as e:
-    #             self.rollback()
-    #             logger.error("got error {}, {}".format(e, e.args[0]))
-    #             logger.error("fail to set user SQL:{}".format(
-    #                 cur.mogrify(sql, para_input)))
-    #             return False
+    async def set_group(self, username, group_id):
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor() as cur:
+                sql = (
+                    "UPDATE `group_user` AS gu "
+                    "INNER JOIN `user` AS u ON gu.uid = u.uid "
+                    "SET gu.gid = %s "
+                    "WHERE u.username = %s "
+                )
+
+                para_input = (group_id, username)
+                try:
+                    await cur.execute(sql, para_input)
+                    await conn.commit()
+                    return True
+                except MySQLError as e:
+                    conn.rollback()
+                    logger.error("got error {}, {}".format(e, e.args[0]))
+                    logger.error(
+                        "fail to set user SQL:{}".format(cur.mogrify(sql, para_input))
+                    )
+                    return False

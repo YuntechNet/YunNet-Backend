@@ -11,4 +11,4 @@ user = Blueprint.group(bp_user,
                        bp_department,
                        bp_bed,
                        bp_ip,
-                       url_prefix='/user/<uid>')
+                       url_prefix='/user/<username>')

@@ -1,6 +1,7 @@
 def message(msg):
     return {"message": msg}
 
+
 NO_PERMISSION = message("NO_PERMISSION")
 INVALID_SESSION = message("INVALID_SESSION")
 SESSION_EXPIRED = message("SESSION_EXPIRED")
