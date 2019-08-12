@@ -46,14 +46,6 @@ Setup MongoDB for logging
 MONGODB_URI = "mongodb://mongo:27017"
 
 """
-Session module endpoint configuration
-"""
-SESSION_MODULE = {
-    "endpoint": "http://0.0.0.0:5000/Session",
-    # 'api_key': '',
-}
-
-"""
 Google reCaptcha configuration
 """
 RECAPTCHA = {"enabled": True, "secret": ""}
