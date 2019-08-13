@@ -22,37 +22,35 @@ def permission(code):
 
             config = request.app.config
 
-            if 'Authorization' not in request.headers:
-                return json(messages.INVALID_SESSION, 403)
+            if "Authorization" not in request.headers:
+                return messages.INVALID_SESSION
 
-            auth_header = request.headers['Authorization']
+            auth_header = request.headers["Authorization"]
 
-            bearer = auth_header.split(' ', 1)
+            bearer = auth_header.split(" ", 1)
             token = bearer[1]
 
             payload = None
             try:
                 payload = jwt.decode(
-                    token, config.JWT['jwtSecret'],
-                    algorithms=config.JWT['algorithm']
+                    token, config.JWT["jwtSecret"], algorithms=config.JWT["algorithm"]
                 )
             except jwt.ExpiredSignatureError as ex:
                 logger.info(ex)
-                return json(messages.SESSION_EXPIRED, 401)
+                return messages.SESSION_EXPIRED
             except jwt.PyJWTError as ex:
                 logger.warning(ex)
-                return json(messages.INVALID_SESSION, 401)
+                return messages.INVALID_SESSION
 
-            username = payload['username']
-
+            username = payload["username"]
             is_authorized = await Permission().check_permission(username, code)
 
             if is_authorized:
-
+                request.args["token_username"] = username
                 response = await f(request, *args, **kwargs)
                 return response
             else:
-                return json(messages.NO_PERMISSION, 403)
+                return messages.NO_PERMISSION
 
         return permission_decorator
 
