@@ -17,7 +17,7 @@ bp_user = Blueprint("user")
 async def bp_user_info(request, username):
     try:
         user = await Userinfo().get_userinfo(username)
-        ip = await Ip().get_user_ip_mac(username)
+        ip = await Ip.get_user_ip_mac(username)
         bed = await Bed().get_user_bed_info(username)
         group = await Group().get_user_group(username)
 
@@ -48,4 +48,4 @@ async def bp_user_info(request, username):
         logger.warning("ip:" + str(ip))
         logger.warning("bed:" + str(bed))
         logger.warning("group:" + str(group))
-        return json(messages.INTERNAL_SERVER_ERROR, 500)
+        return messages.INTERNAL_SERVER_ERROR

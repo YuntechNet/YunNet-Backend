@@ -25,7 +25,20 @@ class Ip:
     #
     #     return dicts
 
-    async def get_user_ip_mac(self, username):
+    @staticmethod
+    async def get_user_ip_mac(username):
+        """
+
+        Args:
+            username:username
+
+        Returns:dict
+            {
+                "ip":str,
+                "mac":str
+            }
+
+        """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
                 sql = (
@@ -45,3 +58,57 @@ class Ip:
                 dicts = dict(zip(key, data))
 
         return dicts
+
+    @staticmethod
+    async def get_user_own_ip(username):
+        """
+
+        Args:
+            username:username
+
+        Returns:list with dict
+            {
+                "ip": str,
+                "switch_id": int,
+                "status_id": int,
+                "ip_type_id": int,
+                "mac": str,
+                "port": int,
+                "port_type": str,
+                "is_updated": bool,
+                "uid": int,
+                "gid": int,
+                "description": str,
+            }
+
+        """
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor() as cur:
+                sql = (
+                    "SELECT i.* "
+                    "FROM `ip` AS i "
+                    "INNER JOIN `user` AS u ON u.`uid`= i.`uid` "
+                    "WHERE u.`username` = %s "
+                )
+                para_input = username
+                await cur.execute(sql, para_input)
+                data = await cur.fetchall()
+
+                if data is None:
+                    return None
+
+                key = [
+                    "ip",
+                    "switch_id",
+                    "status_id",
+                    "ip_type_id",
+                    "mac",
+                    "port",
+                    "port_type",
+                    "is_updated",
+                    "uid",
+                    "gid",
+                    "description",
+                ]
+                dicts = [dict(zip(key, d)) for d in data]
+                return dicts
