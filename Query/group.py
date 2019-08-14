@@ -4,12 +4,12 @@ from Base import SQLPool
 
 
 class Group:
-    async def get_user_group(self, username):
+    @staticmethod
+    async def get_user_group(username):
         """
 
         Args:
             username: username
-
         Returns:
 
         """

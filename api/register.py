@@ -8,16 +8,15 @@ from Query.bed import Bed
 from .login import bp_login
 
 # a.k.a. account activate
-@bp_login.route("/register", methods=["POST"], strict_slashes=True)
+@bp_login.route("/register", methods=["POST"], strict_slashes=True,)
 @doc.consumes(
     doc.JsonBody({"id": str, "bed": str}),
     content_type="application/json",
     location="body",
     required=True,
 )
+@doc.produces()
 async def bp_register(request):
-    # 0200 -> 0300
-
     id = request.json["id"]
     bed = request.json["bed"]
     user_bed = await Bed().get_user_bed_info(id)

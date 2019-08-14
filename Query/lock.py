@@ -1,14 +1,17 @@
+from datetime import datetime
 from pymysql import MySQLError
 from sanic.log import logger
 from Base import SQLPool
+from Base.types import LockTypes
 
 
 class Lock:
-    async def get_lock(self, username: str) -> list:
+    @staticmethod
+    async def get_lock(ip: str) -> list:
         """Get user lock status by username
 
         Args:
-            username:username
+            ip: ip address
 
         Returns:
             list dict.
@@ -16,59 +19,55 @@ class Lock:
             List is formatted as this:
             [
                 {
-                    id: int,
-                    lock_date: datetime,
-                    unlock_date: datetime,
-                    reason: str,
+                    lock_id: int,
+                    lock_type_id: int,
+                    ip: str,
+                    lock_date: datetime
+                    unlock_date: datetime
                     description: str,
-                    ip_id: str,
+                    lock_by_user_id: int
                 },
             ]
 
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = (
-                    "SELECT `dorm_lock`.`id`,`dorm_lock`.`lock_date`,"
-                    "`dorm_lock`.`unlock_date`,`dorm_lock`.`reason`,"
-                    "`dorm_lock`.`description`,`dorm_lock`.`ip_id` "
-                    "FROM `userinfo`"
-                    "INNER JOIN `ip` ON `userinfo`.`ip_id` = `ip`.`ip`"
-                    "INNER JOIN `dorm_lock` ON `dorm_lock`.`ip_id` = `ip`.`ip`"
-                    "WHERE `userinfo`.`account` = %s"
-                )
-                para_input = username
+                sql = "SELECT * FROM `lock` WHERE `ip` = %s "
+                para_input = ip
                 await cur.execute(sql, para_input)
                 data = cur.fetchall()
                 key = [
-                    "id",
+                    "lock_id",
+                    "lock_type_id",
+                    "ip",
                     "lock_date",
                     "unlock_date",
-                    "reason",
                     "description",
-                    "ip_id",
+                    "lock_by_user_id",
                 ]
 
                 dicts = [dict(zip(key, d)) for d in data]
 
         return dicts
 
+    @staticmethod
     async def set_lock(
-        self,
-        username: str,
-        lock_date: str,
-        unlock_date: str,
-        reason: str,
-        description: str,
+        ip: str,
+        lock_type: LockTypes,
+        lock_date: datetime,
+        unlock_date: datetime = None,
+        description: str = None,
+        lock_by_user_id=None,
     ) -> bool:
         """set user lock by username
 
         Args:
-            username: username
-            lock_date: lock date with str format YYYY-MM-DD
-            unlock_date:  unlock date with str format YYYY-MM-DD
-            reason: reason
-            description: description
+            ip: ip address, str
+            lock_type: locktypes, int or LockTypes
+            lock_date: lock date, datetime
+            unlock_date:  unlock date, datetime
+            description: description, str
+            lock_by_user_id: lock by user, int
 
         Returns:
             bool. If lock data is success set return True,
@@ -77,24 +76,15 @@ class Lock:
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = (
-                    "INSERT INTO `dorm_lock` "
-                    "(`lock_date`,`unlock_date`,`reason`,`description`,`ip_id`)"
-                    "SELECT %s,%s,%s,%s, ui.`ip_id` "
-                    "FROM `userinfo` as ui "
-                    "WHERE ui.`account` = %s"
+                sql = "INSERT INTO `lock` VALUES (null, %s, %s, %s, %s, %s, %s)"
+                para_input = (
+                    lock_type,
+                    ip,
+                    lock_type,
+                    unlock_date,
+                    description,
+                    lock_by_user_id,
                 )
-                para_input = (username, lock_date, unlock_date, reason, description)
-                try:
-                    await cur.execute(sql, para_input)
-                    await conn.commit()
-                    return True
-                except MySQLError as e:
-                    await conn.rollback()
-                    logger.error("got error {}, {}".format(e, e.args[0]))
-                    logger.error(
-                        "fail to insert `dorm_lock` table SQL:{}".format(
-                            await cur.mogrify(sql, para_input)
-                        )
-                    )
-                    return False
+                await cur.execute(sql, para_input)
+                await conn.commit()
+                return True

@@ -70,8 +70,8 @@ class User:
     #                 return ""
     #
     #     return data[0]
-
-    async def get_password(self, username: str) -> str:
+    @staticmethod
+    async def get_password(username: str) -> str:
         """Get user's password hash
 
         Args:
