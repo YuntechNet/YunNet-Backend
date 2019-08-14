@@ -1,3 +1,5 @@
+import asyncio
+from BackgroundJobs import mac_update
 from Base import aiohttpSession, SMTP, SQLPool, messages
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
@@ -39,7 +41,7 @@ async def init(app, loop):
         app.aiohttp_session = aiohttp.ClientSession(loop=loop)
         await aiohttpSession.init({"limit": 200})
         # init SMTP client
-        SMTP.init(config.SMTP_CLIENT_PARAMETERS, config.SMTP_CREDENTIALS)
+        await SMTP.init(config.SMTP_CLIENT_PARAMETERS, config.SMTP_CREDENTIALS)
         # init mongo log
         app.mongo = SimpleNamespace()
         app.mongo.motor_client = AsyncIOMotorClient(config.MONGODB_URI)
@@ -47,6 +49,8 @@ async def init(app, loop):
         app.mongo.log_collection = app.mongo.log_db["log"]
         # init aiomysql pool
         await SQLPool.init_pool(**config.SQL_CREDENTIALS)
+        # MAC updating task
+        loop.create_task(mac_update())
     except Exception as ex:
         for url in config.WEBHOOK_URL:
             print("Sending exceptions...")
