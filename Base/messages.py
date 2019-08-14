@@ -6,6 +6,7 @@ def msg(msg):
 
 
 # user login
+RECAPTCHA_FAILED = json(msg("RECAPTCHA_FAILED"), status=401)
 LOGIN_FAILED = json(msg("LOGIN_FAILED"), status=401)
 # user activation
 ACTIVATION_SUCCESS = json(msg("ACTIVATION_SUCCESS"))

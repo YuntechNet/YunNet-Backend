@@ -8,6 +8,7 @@ from Base.jwt_payload import jwt_payload
 from Query.user import User
 from Query.permission import Permission
 from hashlib import sha256
+from Base import messages
 
 bp_login = Blueprint("login")
 
@@ -34,13 +35,13 @@ async def bp_user_login(request):
         ) as resp:
             resp_json = await resp.json()
             if not resp_json["success"]:
-                return json({"message": "token verify failed"})
+                return messages.RECAPTCHA_FAILED
 
     # check login permission
     allowed = await Permission.check_permission("index.login.login")
 
     if not allowed:
-        return json({"message": "no permission"}, 403)
+        return messages.NO_PERMISSION
 
     encode_password = (password + config.PASSWORD_SALT).encode("UTF-8")
     hashed_password = sha256(encode_password).hexdigest()
@@ -50,7 +51,7 @@ async def bp_user_login(request):
     logger.debug(hashed_password)
 
     if db_pw != hashed_password:
-        return json({"message": "Username/Password combination incorrect"}, 401)
+        return messages.LOGIN_FAILED
     token = jwt.encode(
         jwt_payload(username), config.JWT["jwtSecret"], config.JWT["algorithm"]
     ).decode("utf-8")
