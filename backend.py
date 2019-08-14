@@ -6,6 +6,8 @@ from motor.motor_asyncio import (
     AsyncIOMotorDatabase,
     AsyncIOMotorCollection,
 )
+import datetime
+import time
 import jwt
 import traceback
 from types import SimpleNamespace
@@ -84,7 +86,10 @@ async def response_middleware(request, response):
                 username = jwt_payload["username"]
             except:
                 pass
+    timenow = datetime.datetime.now()
     log_entry = {
+        "timestamp": timenow,
+        "unix_time": time.mktime(timenow.timetuple()),
         "method": request.method,
         "ip": real_ip,
         "username": username,
