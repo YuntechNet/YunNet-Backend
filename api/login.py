@@ -38,7 +38,7 @@ async def bp_user_login(request):
                 return messages.RECAPTCHA_FAILED
 
     # check login permission
-    allowed = await Permission.check_permission("index.login.login")
+    allowed = await Permission.check_permission(username, "index.login.login")
 
     if not allowed:
         return messages.NO_PERMISSION
