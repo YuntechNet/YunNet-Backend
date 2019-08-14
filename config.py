@@ -4,6 +4,13 @@ Configuration file for YunNet-Backend
 import sanic
 
 # ---Begin configuration file--- #
+
+
+"""
+Sanic debug mode
+"""
+DEBUG = True
+
 """
 Password salt
 """
@@ -24,6 +31,7 @@ JWT = {
 """
 SMTP Client parameters
 """
+SMTP_ENABLED = False
 SMTP_CLIENT_PARAMETERS = {"host": "", "port": 465, "use_tls": True}
 SMTP_CREDENTIALS = {"username": "", "password": ""}
 
@@ -32,7 +40,7 @@ SQL_CREDENTIALS is the parameters of Connection constructor in PyMySQL
 https://pymysql.readthedocs.io/en/latest/modules/connections.html#pymysql.connections.Connection
 """
 SQL_CREDENTIALS = {
-    "host": "",
+    "host": "db",
     "port": 3306,
     "user": "",
     "password": "",
