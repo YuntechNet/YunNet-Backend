@@ -4,7 +4,8 @@ from sanic.log import logger
 
 
 class Userinfo:
-    async def get_userinfo(self, username):
+    @staticmethod
+    async def get_userinfo(username):
         """Get userinfo by username
 
         Args:

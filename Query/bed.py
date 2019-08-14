@@ -5,11 +5,12 @@ from Base import SQLPool
 
 
 class Bed:
-    async def get_user_bed_info(self, username):
+    @staticmethod
+    async def get_user_bed_info(username):
         """
 
         Args:
-            uid: user_id
+            username: username
 
         Returns:
             dict
@@ -17,7 +18,6 @@ class Bed:
                 bed: string
                 portal: string
                 ip: string
-
             }
 
         """

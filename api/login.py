@@ -37,14 +37,14 @@ async def bp_user_login(request):
                 return json({"message": "token verify failed"})
 
     # check login permission
-    allowed = await Permission().check_permission(username, "index.login.login")
+    allowed = await Permission.check_permission("index.login.login")
 
     if not allowed:
         return json({"message": "no permission"}, 403)
 
     encode_password = (password + config.PASSWORD_SALT).encode("UTF-8")
     hashed_password = sha256(encode_password).hexdigest()
-    db_pw = await User().get_password(username)
+    db_pw = await User.get_password(username)
 
     logger.debug(db_pw)
     logger.debug(hashed_password)

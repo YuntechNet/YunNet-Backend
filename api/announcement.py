@@ -28,8 +28,7 @@ bp_announcement = Blueprint("announcement")
 async def bp_announcement_get_list(request, *args, **kwargs):
     try:
         page = int(request.args["page"][0])
-        query = Announcement()
-        data = query.get_announcement(page)
+        data = Announcement.get_announcement(page)
         response = json(data)
 
     except ValueError:

@@ -7,7 +7,8 @@ from Base import SQLPool
 
 
 class Permission:
-    async def check_permission(self, username, pstr) -> bool:
+    @staticmethod
+    async def check_permission(username, pstr) -> bool:
         """Check if user have the required permission
 
         """
