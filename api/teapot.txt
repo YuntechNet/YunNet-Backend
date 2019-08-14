@@ -1,0 +1,26 @@
+I'm a teapot!
+  ___o___  _
+ /\_____/\//
+c|  ^_^  |/
+  \_____/
+
+Backend powered by Sanic
+
+FirstGrader@YunNet:~/YunNet-Backend$ cat MEMBERS
+
+YunNet Dev members:
+- jackey8313
+- james02288
+- Zeinok
+- biboy1999
+- garyh0205
+- Steve1124
+- uulikeu
+
+FirstGrader@YunNet:~/YunNet-Backend$ pipenv shell
+Spawning environment shell (/bin/bash). Use 'exit' to leave.
+FirstGrader@YunNet:~/YunNet-Backend$ . /home/FirstGrader/.local/share/virtualenvs/YunNet-Backend-Sm9pbiB1cyEK/bin/activate
+(YunNet-Backend-Sm9pbiB1cyEK) FirstGrader@YunNet:~/YunNet-Backend$ python backend.py
+
+[INFO] Join YunNet? (Y/N) Y
+[INFO] Join YunNet System Development Team? (Y/N) Y

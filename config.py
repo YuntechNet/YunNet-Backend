@@ -10,6 +10,9 @@ import sanic
 Sanic debug mode
 """
 DEBUG = True
+DEBUG_ENABLE_SMTP = False
+DEBUG_ENABLE_SQL = False
+DEBUG_ENABLE_MONGO = False
 
 """
 Password salt
@@ -44,7 +47,7 @@ SQL_CREDENTIALS = {
     "port": 3306,
     "user": "",
     "password": "",
-    "db": "",
+    "db": "YunNet",
     "autocommit": True,
 }
 
