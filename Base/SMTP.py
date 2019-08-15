@@ -2,11 +2,13 @@ import aiosmtplib
 
 
 class SMTP:
-    client: aiosmtplib.SMTP = None
-
     """
     SMTP namespace
     """
+
+    client: aiosmtplib.SMTP = None
+    sender: str = None
+
 
     @staticmethod
     async def init(client_parameters, login_parameters):
@@ -14,4 +16,5 @@ class SMTP:
             SMTP.client = aiosmtplib.SMTP(**client_parameters)
             await SMTP.client.connect()
             await SMTP.client.login(**login_parameters)
+            SMTP.sender = login_parameters["username"]
         return SMTP

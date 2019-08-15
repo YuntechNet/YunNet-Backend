@@ -17,6 +17,7 @@ DEBUG_ENABLE_MONGO = False
 """
 Logger SocketHandler configuration
 """
+LOGGING_SOCKET_ENABLED = False
 LOGGING_SOCKET = {"host": "logger", "port": 9000}
 
 

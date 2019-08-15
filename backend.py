@@ -40,8 +40,9 @@ async def init(app, loop):
     Refers to note at: 
     https://aiohttp.readthedocs.io/en/stable/client_quickstart.html#make-a-request
     """
-    sh = logging.handlers.SocketHandler(**config.LOGGING_SOCKET)
-    error_logger.addHandler(sh)
+    if config.LOGGING_SOCKET_ENABLED:
+        sh = logging.handlers.SocketHandler(**config.LOGGING_SOCKET)
+        error_logger.addHandler(sh)
     try:
         # init aiohttp session
         app.aiohttp_session = aiohttp.ClientSession(loop=loop)
@@ -130,6 +131,12 @@ async def app_method_not_supported(request, ex):
 async def app_other_error(request, ex):
     traceback.print_exc()
     error_logger.critical(traceback.format_exc())
+    if SMTP.client is not None:
+        message = MIMEText(traceback.format_exc())
+        message["From"] = config.SMTP_CREDENTIALS["username"]
+        message["To"] = config.SMTP_CREDENTIALS["username"]
+        message["Subject"] = "[YunNet] Encountered exception."
+        await SMTP.client.send_message(message)
     return messages.INTERNAL_SERVER_ERROR
 
 
