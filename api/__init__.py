@@ -9,5 +9,11 @@ from .register import bp_login
 from .teapot import bp_teapot
 
 api = Blueprint.group(
-    user, management, bp_announcement, bp_login, bp_netflow, bp_teapot, url_prefix="/"
+    user,
+    management,
+    bp_announcement,
+    bp_login,
+    bp_netflow,
+    bp_teapot,
+    url_prefix="/api",
 )

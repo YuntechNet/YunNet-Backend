@@ -1,19 +1,17 @@
-import smtplib
+import aiosmtplib
 
 
 class SMTP:
-    client: smtplib.SMTP = None
+    client: aiosmtplib.SMTP = None
 
     """
-    
+    SMTP namespace
     """
 
     @staticmethod
     async def init(client_parameters, login_parameters):
-        if SMTP.client is not None:
-            SMTP.client = smtplib.SMTP(**client_parameters)
+        if SMTP.client is None:
+            SMTP.client = aiosmtplib.SMTP(**client_parameters)
             await SMTP.client.connect()
-            resp = await SMTP.client.login(**login_parameters)
-            if resp != 200:
-                raise smtplib.SMTPAuthenticationError
+            await SMTP.client.login(**login_parameters)
         return SMTP

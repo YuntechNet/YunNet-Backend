@@ -7,12 +7,14 @@ from motor.motor_asyncio import (
     AsyncIOMotorCollection,
 )
 import datetime
+from email.mime.text import MIMEText
 import time
 import jwt
+import logging
 import traceback
 from types import SimpleNamespace
 from sanic import Sanic
-from sanic.log import logger
+from sanic.log import error_logger
 from sanic.request import Request
 from sanic.response import json, text, redirect
 from sanic.exceptions import NotFound, MethodNotSupported
@@ -38,29 +40,32 @@ async def init(app, loop):
     Refers to note at: 
     https://aiohttp.readthedocs.io/en/stable/client_quickstart.html#make-a-request
     """
+    sh = logging.handlers.SocketHandler(**config.LOGGING_SOCKET)
+    error_logger.addHandler(sh)
     try:
         # init aiohttp session
         app.aiohttp_session = aiohttp.ClientSession(loop=loop)
         await aiohttpSession.init({"limit": 200})
         # init SMTP client
-        if config.DEBUG_ENABLE_SMTP or not config.DEBUG:
+        if config.DEBUG_ENABLE_SMTP or (not config.DEBUG):
+            print("Initializing SMTP...")
             await SMTP.init(config.SMTP_CLIENT_PARAMETERS, config.SMTP_CREDENTIALS)
         # init mongo log
         if config.DEBUG_ENABLE_MONGO or not config.DEBUG:
+            print("Initializing MongoDB...")
             app.mongo = SimpleNamespace()
             app.mongo.motor_client = AsyncIOMotorClient(config.MONGODB_URI)
             app.mongo.log_db = app.mongo.motor_client["yunnet"]
             app.mongo.log_collection = app.mongo.log_db["log"]
         # init aiomysql pool
         if config.DEBUG_ENABLE_SQL or not config.DEBUG:
+            print("Initializing aiomysql...")
             await SQLPool.init_pool(**config.SQL_CREDENTIALS)
         # MAC updating task
         loop.create_task(mac_update())
+        raise Exception
     except Exception as ex:
-        for url in config.WEBHOOK_URL:
-            print("Sending exceptions...")
-            payload = {"text": "```%s```" % traceback.format_exc()}
-            await aiohttpSession.session.post(url, json=payload)
+        error_logger.critical(traceback.format_exc())
         raise ex
 
 
@@ -124,9 +129,7 @@ async def app_method_not_supported(request, ex):
 @app.exception(Exception)
 async def app_other_error(request, ex):
     traceback.print_exc()
-    for url in config.WEBHOOK_URL:
-        payload = {"text": "```%s```" % traceback.format_exc()}
-        await aiohttpSession.session.post(url, json=payload)
+    error_logger.critical(traceback.format_exc())
     return messages.INTERNAL_SERVER_ERROR
 
 

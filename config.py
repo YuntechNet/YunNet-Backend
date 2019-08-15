@@ -15,6 +15,12 @@ DEBUG_ENABLE_SQL = False
 DEBUG_ENABLE_MONGO = False
 
 """
+Logger SocketHandler configuration
+"""
+LOGGING_SOCKET = {"host": "logger", "port": 9000}
+
+
+"""
 Password salt
 """
 
@@ -35,7 +41,7 @@ JWT = {
 SMTP Client parameters
 """
 SMTP_ENABLED = False
-SMTP_CLIENT_PARAMETERS = {"host": "", "port": 465, "use_tls": True}
+SMTP_CLIENT_PARAMETERS = {"hostname": "", "port": 465, "use_tls": True}
 SMTP_CREDENTIALS = {"username": "", "password": ""}
 
 """
@@ -60,12 +66,6 @@ MONGODB_URI = "mongodb://mongo:27017"
 Google reCaptcha configuration
 """
 RECAPTCHA = {"enabled": True, "secret": ""}
-
-"""
-Set your webhook link here for exception logging.
-Leave empty to disable.
-"""
-WEBHOOK_URL = []
 
 """
 Sanic app configuration
