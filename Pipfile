@@ -11,6 +11,7 @@ motor = "*"
 aiomysql = "*"
 aiosmtplib = "*"
 sanic-limiter = "*"
+black = "*"
 
 [dev-packages]
 pycodestyle = "*"
