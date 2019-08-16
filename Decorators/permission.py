@@ -43,7 +43,7 @@ def permission(code):
                 return messages.INVALID_SESSION
 
             username = payload["username"]
-            is_authorized = await Permission.check_permission(code)
+            is_authorized = await Permission.check_permission(username, code)
 
             if is_authorized:
                 request.args["token_username"] = username
