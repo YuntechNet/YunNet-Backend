@@ -2,6 +2,8 @@ from sanic.response import json
 from sanic import Blueprint
 from sanic_openapi import doc, api
 
+from Base import types
+from Base.types import IpTypes, IpStatus
 from Decorators import permission
 from Query.ip import Ip
 
@@ -18,6 +20,7 @@ class user_ip_get_own_ip_doc(api.API):
             mac = doc.String("Ip's mac address")
             is_updated = doc.Integer("Is updated to switch")
             description = doc.String("Ip's description")
+            lock_status = doc.String("Ip's lock status")
 
         model = doc.List(model)
 
@@ -49,7 +52,7 @@ async def bp_ip_get_owned_ip(request, username):
 
     remove_key_list = [
         "switch_id",
-        "status_id",
+        # "status_id",
         "ip_type_id",
         "port",
         "port_type",
@@ -59,6 +62,13 @@ async def bp_ip_get_owned_ip(request, username):
     for ip in ips:
         for key in remove_key_list:
             ip.pop(key)
+        status_id = ip.pop("status_id")
+        if status_id == IpStatus.UNLOCK:
+            ip["lock_status"] = "未鎖定"
+        elif status_id == IpStatus.LOCK:
+            ip["lock_status"] = "鎖定"
+        elif status_id == IpStatus.UNLIMITED:
+            ip["lock_status"] = "無限制"
 
     response = json(ips)
     return response

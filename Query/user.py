@@ -91,7 +91,8 @@ class User:
                     return ""
         return data[0]
 
-    async def set_password(self, username: str, password: str) -> bool:
+    @staticmethod
+    async def set_password(username: str, password: str) -> bool:
         """Set user password
 
         Args:
