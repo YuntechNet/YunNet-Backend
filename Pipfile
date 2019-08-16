@@ -11,7 +11,7 @@ motor = "*"
 aiomysql = "*"
 aiosmtplib = "*"
 sanic-limiter = "*"
-black = "*"
+black = "==19.3b0"
 
 [dev-packages]
 pycodestyle = "*"
@@ -19,6 +19,7 @@ pytest-cov = "*"
 sanic-openapi = "*"
 pytest = "*"
 black = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.7"
