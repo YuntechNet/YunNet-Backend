@@ -6,7 +6,7 @@ from sanic_openapi import doc
 bp_teapot = Blueprint("teapot")
 
 
-@bp_teapot.route("/teapot", methods=["GET"], strict_slashes=True)
+@bp_teapot.route("/teapot", methods=["GET"])
 async def teapot(request):
     import importlib.resources as pkg_resources
 

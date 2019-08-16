@@ -5,6 +5,6 @@ from Base import messages
 bp_verify = Blueprint("verify")
 
 
-@bp_verify.route("/verify/{token}", methods=["GET"])
-async def bp_verify_mail(request):
+@bp_verify.route("/verify/<token>", methods=["GET"])
+async def bp_verify_mail(request, token):
     return messages.ACTIVATION_SUCCESS

@@ -1,17 +1,49 @@
 from sanic.response import json
 from sanic import Blueprint
-from sanic_openapi import doc
+from sanic_openapi import doc, api
 
+from Decorators import permission
 from Query.ip import Ip
 
 bp_ip = Blueprint("ip")
 
 
-@bp_ip.route("/ip", methods=["GET"], strict_slashes=True)
-@doc.produces(
-    [{"ip": str, "mac": str, "is_updated": bool, "description": str}],
-    content_type="application/json",
-)
+class user_ip_get_own_ip_doc(api.API):
+    class SuccessResp:
+        code = 200
+        description = "On success request"
+
+        class model:
+            ip = doc.String("Ip")
+            mac = doc.String("Ip's mac address")
+            is_updated = doc.Integer("Is updated to switch")
+            description = doc.String("Ip's description")
+
+        model = doc.List(model)
+
+    class FailResp:
+        code = 500
+        description = "On failed request"
+
+        class model:
+            message = doc.String("Error message")
+
+        model = dict(vars(model))
+
+    class AuthResp:
+        code = 401
+        description = "On failed auth"
+
+        class model:
+            message = doc.String("Error message")
+
+        model = dict(vars(model))
+
+    response = [SuccessResp, FailResp, AuthResp]
+
+
+@user_ip_get_own_ip_doc
+@bp_ip.route("/ip", methods=["GET"])
 async def bp_ip_get_owned_ip(request, username):
     ips = await Ip.get_user_own_ip(username)
 

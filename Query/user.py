@@ -121,6 +121,15 @@ class User:
                     return False
 
     async def set_group(self, username, group_id):
+        """
+
+        Args:
+            username:username
+            group_id: group id
+
+        Returns:
+            int. count of affected row.
+        """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
                 sql = (
@@ -132,13 +141,13 @@ class User:
 
                 para_input = (group_id, username)
                 try:
-                    await cur.execute(sql, para_input)
+                    row_affected = await cur.execute(sql, para_input)
                     await conn.commit()
-                    return True
+                    return row_affected
                 except MySQLError as e:
                     conn.rollback()
                     logger.error("got error {}, {}".format(e, e.args[0]))
                     logger.error(
                         "fail to set user SQL:{}".format(cur.mogrify(sql, para_input))
                     )
-                    return False
+                    return row_affected
