@@ -7,6 +7,7 @@ class SQLPool:
     """
 
     pool: aiomysql.Pool = None
+    debug: bool = False
 
     @staticmethod
     def acquire():

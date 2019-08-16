@@ -62,6 +62,7 @@ async def init(app, loop):
         if config.DEBUG_ENABLE_SQL or not config.DEBUG:
             print("Initializing aiomysql...")
             await SQLPool.init_pool(**config.SQL_CREDENTIALS)
+            SQLPool.debug = config.DEBUG_PRINT_SQL_ONLY
         # MAC updating task
         loop.create_task(mac_update())
         raise Exception

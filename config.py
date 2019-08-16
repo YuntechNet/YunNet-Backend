@@ -12,6 +12,7 @@ Sanic debug mode
 DEBUG = True
 DEBUG_ENABLE_SMTP = False
 DEBUG_ENABLE_SQL = False
+DEBUG_PRINT_SQL_ONLY = False
 DEBUG_ENABLE_MONGO = False
 
 """
@@ -41,7 +42,6 @@ JWT = {
 """
 SMTP Client parameters
 """
-SMTP_ENABLED = False
 SMTP_CLIENT_PARAMETERS = {"hostname": "", "port": 465, "use_tls": True}
 SMTP_CREDENTIALS = {"username": "", "password": ""}
 
