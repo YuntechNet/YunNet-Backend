@@ -59,16 +59,17 @@ async def bp_ip_get_owned_ip(request, username):
         "uid",
         "gid",
     ]
+
     for ip in ips:
         for key in remove_key_list:
             ip.pop(key)
         status_id = ip.pop("status_id")
         if status_id == IpStatus.UNLOCK:
-            ip["lock_status"] = "未鎖定"
+            ip["lock_status"] = "UNLOCKED"
         elif status_id == IpStatus.LOCK:
-            ip["lock_status"] = "鎖定"
+            ip["lock_status"] = "LOCKED"
         elif status_id == IpStatus.UNLIMITED:
-            ip["lock_status"] = "無限制"
+            ip["lock_status"] = "UNLIMITED"
 
     response = json(ips)
     return response

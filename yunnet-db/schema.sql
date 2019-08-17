@@ -315,8 +315,8 @@ CREATE TABLE IF NOT EXISTS `YunNet`.`lock` (
   `lock_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `lock_type_id` INT(10) UNSIGNED NOT NULL DEFAULT 0,
   `ip` VARCHAR(32) NULL,
-  `lock_date` DATE NULL,
-  `unlock_date` DATE NULL,
+  `lock_date` DATETIME NULL,
+  `unlock_date` DATETIME NULL,
   `description` LONGTEXT NULL,
   `lock_by_user_id` INT(10) UNSIGNED NULL,
   PRIMARY KEY (`lock_id`),
@@ -337,11 +337,11 @@ CREATE TABLE IF NOT EXISTS `YunNet`.`lock` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-CREATE INDEX `lock_fk_ip_idx` ON `YunNet`.`lock` (`ip` ASC);
+CREATE INDEX `lock_fk_ip_idx` ON `YunNet`.`lock` (`ip` ASC) VISIBLE;
 
-CREATE INDEX `lock_fk_lock_type_idx` ON `YunNet`.`lock` (`lock_type_id` ASC);
+CREATE INDEX `lock_fk_lock_type_idx` ON `YunNet`.`lock` (`lock_type_id` ASC) VISIBLE;
 
-CREATE INDEX `lock_fk_user_idx` ON `YunNet`.`lock` (`lock_by_user_id` ASC);
+CREATE INDEX `lock_fk_user_idx` ON `YunNet`.`lock` (`lock_by_user_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
@@ -351,6 +351,7 @@ DROP TABLE IF EXISTS `YunNet`.`announcement` ;
 
 CREATE TABLE IF NOT EXISTS `YunNet`.`announcement` (
   `announcement_id` INT(10) UNSIGNED NOT NULL,
+  `title` LONGTEXT NULL,
   `content` LONGTEXT NULL,
   `uid` INT(10) UNSIGNED NOT NULL,
   PRIMARY KEY (`announcement_id`),
@@ -361,7 +362,7 @@ CREATE TABLE IF NOT EXISTS `YunNet`.`announcement` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-CREATE INDEX `announcement_fk_user_idx` ON `YunNet`.`announcement` (`uid` ASC);
+CREATE INDEX `announcement_fk_user_idx` ON `YunNet`.`announcement` (`uid` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------

@@ -32,10 +32,10 @@ class Lock:
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = "SELECT * FROM `lock` WHERE `ip` = %s "
+                sql = "SELECT * FROM `lock` WHERE `ip` = %s ORDER BY `lock_date` DESC"
                 para_input = ip
                 await cur.execute(sql, para_input)
-                data = cur.fetchall()
+                data = await cur.fetchall()
                 key = [
                     "lock_id",
                     "lock_type_id",

@@ -2,8 +2,9 @@ from enum import IntEnum
 
 
 class LockTypes(IntEnum):
-    ABUSE = 1
-    OVERFLOW = 2
+    ABUSE = 0
+    OVERFLOW = 1
+    VIRUS = 2
 
 
 class IpStatus(IntEnum):

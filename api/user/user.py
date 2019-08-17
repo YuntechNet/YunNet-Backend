@@ -54,7 +54,7 @@ async def bp_user_info(request, username):
     try:
         user = await Userinfo.get_userinfo(username)
         ip = await Ip.get_user_ip_mac(username)
-        bed = await Bed().get_user_bed_info(username)
+        bed = await Bed.get_user_bed_info(username)
         group = await Group.get_user_group(username)
 
         # bed_type = "一般房"
