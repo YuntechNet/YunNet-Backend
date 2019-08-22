@@ -21,11 +21,14 @@ Logger SocketHandler configuration
 LOGGING_SOCKET_ENABLED = False
 LOGGING_SOCKET = {"host": "logger", "port": 9000}
 
+"""
+MAC Updater endpoint URI
+"""
+MAC_UPDATER_ENDPOINT = "http://updater/update"
 
 """
 Password salt
 """
-
 PASSWORD_SALT = "PutYourSuperLongSaltSecretHereForPasswordHash"
 
 """

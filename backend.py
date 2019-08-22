@@ -64,7 +64,7 @@ async def init(app, loop):
             await SQLPool.init_pool(**config.SQL_CREDENTIALS)
             SQLPool.debug = config.DEBUG_PRINT_SQL_ONLY
         # MAC updating task
-        loop.create_task(mac_update())
+        loop.create_task(mac_update(config.MAC_UPDATER_ENDPOINT))
     except Exception as ex:
         error_logger.critical(traceback.format_exc())
         raise ex
