@@ -50,27 +50,29 @@ async def do_mac_update(api_endpoint: str):
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
                 cur: DictCursor = cur
-                cur.execute(
+                await cur.execute(
                     "SELECT `value` FROM `variable` WHERE `name` = 'mac_verify'"
                 )
-                mac_verify = cur.fetchone()["value"]
-                cur.execute(
+                mac_verify = await cur.fetchone()["value"]
+                await cur.execute(
                     "SELECT `value` FROM `variable` WHERE `name` = 'mac_verify_changed'"
                 )
-                mac_verify_changed = cur.fetchone()["value"]
-                cur.execute(
+                mac_verify_changed = await cur.fetchone()["value"]
+                await cur.execute(
                     "SELECT `value` FROM `variable` WHERE `name` = 'source_verify'"
                 )
-                source_verify = cur.fetchone()["value"]
-                cur.execute(
+                source_verify = await cur.fetchone()["value"]
+                await cur.execute(
                     "SELECT `value` FROM `variable` WHERE `name` = 'source_verify_changed'"
                 )
-                source_verify_changed = cur.fetchone()["value"]
+                source_verify_changed = await cur.fetchone()["value"]
                 ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`  FROM `ip` WHERE `is_updated` = 0"
-                cur.execute(ip_query)
+                if (mac_verify_changed and mac_verify) or (source_verify_changed and source_verify_changed):
+                    ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`  FROM `ip`"
+                await cur.execute(ip_query)
                 ip = cur.fetchall()
                 switch_query = "SELECT `switch_id`, `upper_id`, `upper_port`, `upper_port_type`, `account`, `password`, `vlan`, `machine_type`, `port_description`, `port_type` FROM `switch`"
-                cur.execute(switch_query)
+                await cur.execute(switch_query)
                 switch = cur.fetchall()
                 payload = {
                     "mac_verify": mac_verify,
@@ -88,11 +90,11 @@ async def do_mac_update(api_endpoint: str):
                         update_query = (
                             "UPDATE `ip` SET `is_updated` = '1' WHERE `updated` = '0'"
                         )
-                        cur.execute(update_query)
-                        cur.execute(
+                        await cur.execute(update_query)
+                        await cur.execute(
                             "UPDATE `variable` SET `value` = '0' WHERE `variable`.`name` = 'mac_verify_changed'"
                         )
-                        cur.execute(
+                        await cur.execute(
                             "UPDATE `variable` SET `value` = '0' WHERE `variable`.`name` = 'source_verify_changed'"
                         )
     except Exception as e:
