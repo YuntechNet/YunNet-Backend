@@ -43,6 +43,8 @@ async def mac_update(api_endpoint: str):
 
 
 async def do_mac_update(api_endpoint: str):
+    if mac_update_status.running is True:
+        return
     mac_update_status.running = True
     try:
         async with SQLPool.acquire() as conn:
