@@ -10,13 +10,13 @@ class mac_update_status:
     last_run: datetime = None
 
 
-async def mac_update():
+async def mac_update(api_endpoint: str):
 
     while True:
         if mac_update_status.last_run is not None:
             # update already run
             last_run = datetime.now()
-            await do_mac_update()
+            await do_mac_update(api_endpoint)
             # calculate next run delay
             nextrun = datetime.now()
             nextrun = nextrun.replace(
@@ -28,7 +28,7 @@ async def mac_update():
         else:
             # backend just started, do update now
             last_run = datetime.now()
-            await do_mac_update()
+            await do_mac_update(api_endpoint)
             # calculate next run delay
             nextrun = datetime.now()
             nextrun = nextrun.replace(
@@ -43,7 +43,7 @@ async def mac_update():
             await asyncio.sleep(delta.total_seconds())
 
 
-async def do_mac_update():
+async def do_mac_update(api_endpoint: str):
     async with SQLPool.acquire() as conn:
         async with conn.cursor(DictCursor) as cur:
             cur: DictCursor = cur
@@ -74,7 +74,7 @@ async def do_mac_update():
                 "switch": switch,
             }
             async with aiohttpSession.session.post(
-                "switch-updater/update", json=payload
+                api_endpoint, json=payload
             ) as resp:
                 resp: Response = resp
                 if resp.status == 200:
