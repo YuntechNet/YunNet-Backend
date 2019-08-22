@@ -9,7 +9,6 @@ class SMTP:
     client: aiosmtplib.SMTP = None
     sender: str = None
 
-
     @staticmethod
     async def init(client_parameters, login_parameters):
         if SMTP.client is None:
