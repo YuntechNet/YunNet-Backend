@@ -14,9 +14,33 @@ async def mac_update():
 
     while True:
         if mac_update_status.last_run is not None:
-            now: timedelta = datetime.now() - mac_update_status.last_run
-
-        await asyncio.sleep(3600)
+            # update already run
+            last_run = datetime.now()
+            await do_mac_update()
+            # calculate next run delay
+            nextrun = datetime.now()
+            nextrun = nextrun.replace(
+                hour=nextrun.hour + 1, minute=0, second=0, microsecond=0
+            )
+            delta: timedelta = nextrun - last_run
+            # sleep
+            await asyncio.sleep(delta.total_seconds())
+        else:
+            # backend just started, do update now
+            last_run = datetime.now()
+            await do_mac_update()
+            # calculate next run delay
+            nextrun = datetime.now()
+            nextrun = nextrun.replace(
+                hour=nextrun.hour + 1, minute=0, second=0, microsecond=0
+            )
+            delta: timedelta = nextrun - last_run
+            if delta.total_seconds() < 60 * 10:  # 10 min
+                # add another hour
+                nextrun = nextrun.replace(
+                    hour=nextrun.hour + 1, minute=0, second=0, microsecond=0
+                )
+            await asyncio.sleep(delta.total_seconds())
 
 
 async def do_mac_update():
