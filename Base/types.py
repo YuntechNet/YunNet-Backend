@@ -14,8 +14,8 @@ class IpStatus(IntEnum):
 
 
 class IpTypes(IntEnum):
-    DORM_NORMAL = 0
-    DORM_PANDA = 1
-    SERVICE = 2
-    SWITCH = 3
-    UNUSED = 4
+    UNUSED = 0
+    DORM_NORMAL = 1
+    DORM_PANDA = 2
+    SERVICE = 3
+    SWITCH = 4

@@ -44,7 +44,7 @@ class Ip:
                 sql = (
                     "SELECT i.ip,i.mac "
                     "FROM `user` AS u "
-                    "INNER JOIN `ip` AS i ON i.uid = u.uid "
+                    "INNER JOIN `iptable` AS i ON i.uid = u.uid "
                     "WHERE u.username = %s "
                 )
                 para_input = username
@@ -86,7 +86,7 @@ class Ip:
             async with conn.cursor() as cur:
                 sql = (
                     "SELECT i.* "
-                    "FROM `ip` AS i "
+                    "FROM `iptable` AS i "
                     "INNER JOIN `user` AS u ON u.`uid`= i.`uid` "
                     "WHERE u.`username` = %s "
                 )

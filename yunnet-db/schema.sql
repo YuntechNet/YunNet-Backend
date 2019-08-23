@@ -27,11 +27,10 @@ CREATE TABLE IF NOT EXISTS `YunNet`.`permission` (
   `str` TEXT NOT NULL,
   PRIMARY KEY (`pid`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 12
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE UNIQUE INDEX `permission_key` USING HASH ON `YunNet`.`permission` (`str`);
+CREATE UNIQUE INDEX `permission_key` USING HASH ON `YunNet`.`permission` (`str`) VISIBLE;
 
 
 -- -----------------------------------------------------
@@ -45,7 +44,6 @@ CREATE TABLE IF NOT EXISTS `YunNet`.`group` (
   `description` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`gid`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 10
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
@@ -59,21 +57,21 @@ CREATE TABLE IF NOT EXISTS `YunNet`.`group_permission` (
   `gid` INT(10) UNSIGNED NOT NULL,
   `pid` INT(10) UNSIGNED NOT NULL,
   PRIMARY KEY USING BTREE (`gid`, `pid`),
-  CONSTRAINT `group_permission_fk_permission`
-    FOREIGN KEY (`pid`)
-    REFERENCES `YunNet`.`permission` (`pid`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
   CONSTRAINT `group_permission_fk_group`
     FOREIGN KEY (`gid`)
     REFERENCES `YunNet`.`group` (`gid`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `group_permission_fk_permission`
+    FOREIGN KEY (`pid`)
+    REFERENCES `YunNet`.`permission` (`pid`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `group_permission_fk_permission_idx` ON `YunNet`.`group_permission` (`pid` ASC);
+CREATE INDEX `group_permission_fk_permission_idx` ON `YunNet`.`group_permission` (`pid` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
@@ -99,9 +97,9 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `fk_gid_groups_gid` USING BTREE ON `YunNet`.`group_inherit` (`gid`);
+CREATE INDEX `fk_gid_groups_gid` USING BTREE ON `YunNet`.`group_inherit` (`gid`) VISIBLE;
 
-CREATE INDEX `group_inherit_fk_group_p_idx` ON `YunNet`.`group_inherit` (`parent_gid` ASC);
+CREATE INDEX `group_inherit_fk_group_p_idx` ON `YunNet`.`group_inherit` (`parent_gid` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
@@ -115,13 +113,13 @@ CREATE TABLE IF NOT EXISTS `YunNet`.`switch` (
   `upper_port` INT(11) NULL DEFAULT NULL,
   `upper_port_type` INT(11) NOT NULL,
   `location` VARCHAR(10) NULL DEFAULT NULL,
-  `remote_password` VARCHAR(30) NOT NULL,
   `account` VARCHAR(30) NOT NULL,
+  `password` VARCHAR(30) NOT NULL,
   `vlan` INT(11) NOT NULL,
   `machine_type` INT(11) NOT NULL,
   `port_description` LONGTEXT NULL DEFAULT NULL,
   `port_type` LONGTEXT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NULL DEFAULT NULL,
-  `MB_Serial_Number` VARCHAR(15) NULL DEFAULT NULL,
+  `ip` VARCHAR(32) NOT NULL,
   PRIMARY KEY (`switch_id`),
   CONSTRAINT `switch_fk_self_upper_id`
     FOREIGN KEY (`upper_id`)
@@ -132,19 +130,7 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `switch_fk_self_upper_id_idx` ON `YunNet`.`switch` (`upper_id` ASC);
-
-
--- -----------------------------------------------------
--- Table `YunNet`.`ip_status`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `YunNet`.`ip_status` ;
-
-CREATE TABLE IF NOT EXISTS `YunNet`.`ip_status` (
-  `status_id` INT(11) UNSIGNED NOT NULL,
-  `name` TEXT NULL,
-  PRIMARY KEY (`status_id`))
-ENGINE = InnoDB;
+CREATE INDEX `switch_fk_self_upper_id_idx` ON `YunNet`.`switch` (`upper_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
@@ -154,9 +140,11 @@ DROP TABLE IF EXISTS `YunNet`.`ip_type` ;
 
 CREATE TABLE IF NOT EXISTS `YunNet`.`ip_type` (
   `ip_type_id` INT(11) UNSIGNED NOT NULL,
-  `type` TEXT NULL,
+  `type` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`ip_type_id`))
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
 
 
 -- -----------------------------------------------------
@@ -169,78 +157,78 @@ CREATE TABLE IF NOT EXISTS `YunNet`.`user` (
   `username` VARCHAR(20) NOT NULL,
   `password_hash` TEXT NULL DEFAULT NULL,
   `nick` TEXT NULL DEFAULT NULL,
-  `department` TEXT NULL,
-  `back_mail` TEXT NULL,
-  `note` TEXT NULL,
+  `department` TEXT NULL DEFAULT NULL,
+  `back_mail` TEXT NULL DEFAULT NULL,
+  `note` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`uid`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 2
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE UNIQUE INDEX `uid_UNIQUE` ON `YunNet`.`user` (`uid` ASC);
+CREATE UNIQUE INDEX `uid_UNIQUE` ON `YunNet`.`user` (`uid` ASC) VISIBLE;
 
-CREATE UNIQUE INDEX `back_mail_UNIQUE` ON `YunNet`.`user` (`back_mail` ASC);
+CREATE UNIQUE INDEX `username_UNIQUE` ON `YunNet`.`user` (`username` ASC) VISIBLE;
 
-CREATE UNIQUE INDEX `username_UNIQUE` ON `YunNet`.`user` (`username` ASC);
+CREATE UNIQUE INDEX `back_mail_UNIQUE` USING HASH ON `YunNet`.`user` (`back_mail`) VISIBLE;
 
 
 -- -----------------------------------------------------
--- Table `YunNet`.`ip`
+-- Table `YunNet`.`iptable`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `YunNet`.`ip` ;
+DROP TABLE IF EXISTS `YunNet`.`iptable` ;
 
-CREATE TABLE IF NOT EXISTS `YunNet`.`ip` (
+CREATE TABLE IF NOT EXISTS `YunNet`.`iptable` (
   `ip` VARCHAR(32) NOT NULL,
+  `ip_type_id` INT(11) UNSIGNED NULL DEFAULT NULL,
+  `is_unlimited` TINYINT(1) NOT NULL DEFAULT 0,
   `switch_id` INT(11) NULL DEFAULT NULL,
-  `status_id` INT(11) UNSIGNED NOT NULL DEFAULT 0,
-  `ip_type_id` INT(11) UNSIGNED NOT NULL DEFAULT 0,
+  `port` INT(11) NOT NULL,
+  `port_type` INT(11) NOT NULL,
   `mac` VARCHAR(18) NULL DEFAULT NULL,
-  `port` INT(11) NOT NULL DEFAULT 0,
-  `port_type` INT(11) NOT NULL DEFAULT 0,
   `is_updated` TINYINT(1) NOT NULL DEFAULT 0,
-  `uid` INT(10) UNSIGNED NULL,
-  `gid` INT(10) UNSIGNED NULL,
-  `description` LONGTEXT NULL,
+  `uid` INT(11) UNSIGNED NOT NULL,
+  `gid` INT(11) UNSIGNED NOT NULL,
+  `description` TEXT NOT NULL,
+  `lock_id` INT(10) UNSIGNED NULL DEFAULT NULL,
   PRIMARY KEY (`ip`),
-  CONSTRAINT `ip_fk_switch`
-    FOREIGN KEY (`switch_id`)
-    REFERENCES `YunNet`.`switch` (`switch_id`)
+  CONSTRAINT `iptable_fk_group`
+    FOREIGN KEY (`gid`)
+    REFERENCES `YunNet`.`group` (`gid`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `ip_fk_ip_status`
-    FOREIGN KEY (`status_id`)
-    REFERENCES `YunNet`.`ip_status` (`status_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `ip_fk_ip_type`
+  CONSTRAINT `iptable_fk_ip_type`
     FOREIGN KEY (`ip_type_id`)
     REFERENCES `YunNet`.`ip_type` (`ip_type_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `ip_fk_user`
+  CONSTRAINT `iptable_fk_switch`
+    FOREIGN KEY (`switch_id`)
+    REFERENCES `YunNet`.`switch` (`switch_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `iptable_fk_user`
     FOREIGN KEY (`uid`)
     REFERENCES `YunNet`.`user` (`uid`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `ip_fk_group`
-    FOREIGN KEY (`gid`)
-    REFERENCES `YunNet`.`group` (`gid`)
+  CONSTRAINT `iptable_fk_lock`
+    FOREIGN KEY (`lock_id`)
+    REFERENCES `YunNet`.`lock` (`lock_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `ip_fk_ip_status_idx` ON `YunNet`.`ip` (`status_id` ASC);
+CREATE INDEX `iptable_fk_switch` ON `YunNet`.`iptable` (`switch_id` ASC) VISIBLE;
 
-CREATE INDEX `ip_fk_ip_type_idx` ON `YunNet`.`ip` (`ip_type_id` ASC);
+CREATE INDEX `iptable_fk_ip_type` ON `YunNet`.`iptable` (`ip_type_id` ASC) VISIBLE;
 
-CREATE INDEX `ip_fk_switch_idx` ON `YunNet`.`ip` (`switch_id` ASC);
+CREATE INDEX `iptable_fk_user` ON `YunNet`.`iptable` (`uid` ASC) VISIBLE;
 
-CREATE INDEX `ip_fk_user_idx` ON `YunNet`.`ip` (`uid` ASC);
+CREATE INDEX `iptable_fk_group` ON `YunNet`.`iptable` (`gid` ASC) VISIBLE;
 
-CREATE INDEX `ip_fk_group_idx` ON `YunNet`.`ip` (`gid` ASC);
+CREATE INDEX `iptable_fk_lock_idx` ON `YunNet`.`iptable` (`lock_id` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
@@ -251,7 +239,7 @@ DROP TABLE IF EXISTS `YunNet`.`user_permission` ;
 CREATE TABLE IF NOT EXISTS `YunNet`.`user_permission` (
   `uid` INT(10) UNSIGNED NOT NULL,
   `pid` INT(10) UNSIGNED NOT NULL,
-  `is_excluded` TINYINT(1) NULL,
+  `is_excluded` TINYINT(1) NULL DEFAULT NULL,
   PRIMARY KEY USING BTREE (`uid`, `pid`),
   CONSTRAINT `user_permission_fk_permission`
     FOREIGN KEY (`pid`)
@@ -267,7 +255,7 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `user_permission_fk_permission_idx` ON `YunNet`.`user_permission` (`pid` ASC);
+CREATE INDEX `user_permission_fk_permission_idx` ON `YunNet`.`user_permission` (`pid` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
@@ -289,9 +277,11 @@ CREATE TABLE IF NOT EXISTS `YunNet`.`group_user` (
     REFERENCES `YunNet`.`user` (`uid`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
 
-CREATE INDEX `group_user_fk_user_idx` ON `YunNet`.`group_user` (`uid` ASC);
+CREATE INDEX `group_user_fk_user_idx` ON `YunNet`.`group_user` (`uid` ASC) VISIBLE;
 
 
 -- -----------------------------------------------------
@@ -301,9 +291,11 @@ DROP TABLE IF EXISTS `YunNet`.`lock_type` ;
 
 CREATE TABLE IF NOT EXISTS `YunNet`.`lock_type` (
   `lock_type_id` INT(10) UNSIGNED NOT NULL,
-  `str` TEXT NULL,
+  `str` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`lock_type_id`))
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
 
 
 -- -----------------------------------------------------
@@ -314,17 +306,12 @@ DROP TABLE IF EXISTS `YunNet`.`lock` ;
 CREATE TABLE IF NOT EXISTS `YunNet`.`lock` (
   `lock_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `lock_type_id` INT(10) UNSIGNED NOT NULL DEFAULT 0,
-  `ip` VARCHAR(32) NULL,
-  `lock_date` DATETIME NULL,
-  `unlock_date` DATETIME NULL,
-  `description` LONGTEXT NULL,
-  `lock_by_user_id` INT(10) UNSIGNED NULL,
+  `ip` VARCHAR(32) NULL DEFAULT NULL,
+  `lock_date` DATE NULL DEFAULT NULL,
+  `unlock_date` DATE NULL DEFAULT NULL,
+  `description` LONGTEXT NULL DEFAULT NULL,
+  `lock_by_user_id` INT(10) UNSIGNED NULL DEFAULT NULL,
   PRIMARY KEY (`lock_id`),
-  CONSTRAINT `lock_fk_ip`
-    FOREIGN KEY (`ip`)
-    REFERENCES `YunNet`.`ip` (`ip`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
   CONSTRAINT `lock_fk_lock_type`
     FOREIGN KEY (`lock_type_id`)
     REFERENCES `YunNet`.`lock_type` (`lock_type_id`)
@@ -335,7 +322,9 @@ CREATE TABLE IF NOT EXISTS `YunNet`.`lock` (
     REFERENCES `YunNet`.`user` (`uid`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
 
 CREATE INDEX `lock_fk_ip_idx` ON `YunNet`.`lock` (`ip` ASC) VISIBLE;
 
@@ -351,8 +340,7 @@ DROP TABLE IF EXISTS `YunNet`.`announcement` ;
 
 CREATE TABLE IF NOT EXISTS `YunNet`.`announcement` (
   `announcement_id` INT(10) UNSIGNED NOT NULL,
-  `title` LONGTEXT NULL,
-  `content` LONGTEXT NULL,
+  `content` LONGTEXT NULL DEFAULT NULL,
   `uid` INT(10) UNSIGNED NOT NULL,
   PRIMARY KEY (`announcement_id`),
   CONSTRAINT `announcement_fk_user`
@@ -360,7 +348,9 @@ CREATE TABLE IF NOT EXISTS `YunNet`.`announcement` (
     REFERENCES `YunNet`.`user` (`uid`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
 
 CREATE INDEX `announcement_fk_user_idx` ON `YunNet`.`announcement` (`uid` ASC) VISIBLE;
 
@@ -372,14 +362,16 @@ DROP TABLE IF EXISTS `YunNet`.`token` ;
 
 CREATE TABLE IF NOT EXISTS `YunNet`.`token` (
   `uid` INT(10) UNSIGNED NOT NULL,
-  `token` TEXT NULL,
+  `token` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`uid`),
   CONSTRAINT `token_fk_user`
     FOREIGN KEY (`uid`)
     REFERENCES `YunNet`.`user` (`uid`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
 
 
 -- -----------------------------------------------------
@@ -391,12 +383,45 @@ CREATE TABLE IF NOT EXISTS `YunNet`.`backup_mac` (
   `ip` VARCHAR(32) NOT NULL,
   `mac` VARCHAR(18) NULL DEFAULT NULL,
   PRIMARY KEY (`ip`),
-  CONSTRAINT `backup_mac_fk_ip`
+  CONSTRAINT `backup_mac_fk_iptable`
     FOREIGN KEY (`ip`)
-    REFERENCES `YunNet`.`ip` (`ip`)
+    REFERENCES `YunNet`.`iptable` (`ip`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Table `YunNet`.`bed`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `YunNet`.`bed` ;
+
+CREATE TABLE IF NOT EXISTS `YunNet`.`bed` (
+  `bed` VARCHAR(9) NOT NULL,
+  `type` INT(11) NOT NULL,
+  `portal` VARCHAR(9) NULL DEFAULT NULL,
+  `ip` VARCHAR(32) NOT NULL,
+  PRIMARY KEY (`bed`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
+
+
+-- -----------------------------------------------------
+-- Table `YunNet`.`variable`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `YunNet`.`variable` ;
+
+CREATE TABLE IF NOT EXISTS `YunNet`.`variable` (
+  `name` VARCHAR(32) NOT NULL,
+  `type` VARCHAR(16) NOT NULL,
+  `value` TEXT NULL DEFAULT NULL,
+  PRIMARY KEY (`name`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_unicode_ci;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

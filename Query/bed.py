@@ -1,7 +1,7 @@
 from pymysql import MySQLError
-from sanic.log import logger
+from sanic.log import logger, error_logger
 
-from Base import SQLPool
+from Base import SQLPool, messages
 
 
 class Bed:
@@ -26,7 +26,7 @@ class Bed:
                 sql = (
                     "SELECT i.description, ip_type_id "
                     "FROM `user` AS u "
-                    "INNER JOIN `ip` AS i ON i.uid = u.uid "
+                    "INNER JOIN `iptable` AS i ON i.uid = u.uid "
                     "WHERE u.username = %s "
                     "AND (i.ip_type_id = 0 OR i.ip_type_id = 1)"
                 )
@@ -37,6 +37,12 @@ class Bed:
 
                 if data is None:
                     return None
+
+                if data[0] == "":
+                    error_logger.error(
+                        "Dorm Ip found but description missing: {}".format(username)
+                    )
+                    return messages.INTERNAL_SERVER_ERROR
 
                 bed = data[0].split(".")
 
