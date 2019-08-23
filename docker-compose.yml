@@ -1,0 +1,33 @@
+version: '3'
+services:
+  backend:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ~/.config/YunNet-Backend/config.py:/backend/config.py
+  db:
+    restart: always
+    build:
+      context: ./yunnet-db
+      dockerfile: Dockerfile
+    environment:
+      - MYSQL_ROOT_PASSWORD="toor"
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8080:8080"
+  mongo-express:
+    image: mongo-express
+    environment:
+      - ME_CONFIG_BASICAUTH_USERNAME="user"
+      - ME_CONFIG_BASICAUTH_PASSWORD="password"
+    ports:
+      - "8081:8001"
+  mongo:
+    restart: always
+    image: mongo
+
