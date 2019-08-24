@@ -38,7 +38,7 @@ app.config.from_object(config)
 @app.listener("before_server_start")
 async def init(app, loop):
     if not config.CUSTOM_JWT_SECRET:
-        config.JWT["jwtSecret"] = "".join(random.choice(string.digits+string.ascii_letters) for i in range(64))
+        app.config.JWT["jwtSecret"] = "".join(random.choice(string.digits+string.ascii_letters) for i in range(64))
     if config.LOGGING_SOCKET_ENABLED:
         sh = logging.handlers.SocketHandler(**config.LOGGING_SOCKET)
         error_logger.addHandler(sh)
@@ -66,7 +66,7 @@ async def init(app, loop):
         loop.create_task(mac_update(config.MAC_UPDATER_ENDPOINT))
     except Exception as ex:
         error_logger.critical(traceback.format_exc())
-        raise ex''.join(random.choice(string.digits+string.ascii_letters) for i in range(64))
+        raise ex
 
 
 @app.listener("after_server_stop")
