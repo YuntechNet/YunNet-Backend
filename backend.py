@@ -131,12 +131,12 @@ async def app_method_not_supported(request, ex):
 async def app_other_error(request, ex):
     traceback.print_exc()
     error_logger.critical(traceback.format_exc())
-    if SMTP.client is not None:
+    if SMTP.initialized:
         message = MIMEText(traceback.format_exc())
         message["From"] = config.SMTP_CREDENTIALS["username"]
         message["To"] = config.SMTP_CREDENTIALS["username"]
         message["Subject"] = "[YunNet] Encountered exception."
-        await SMTP.client.send_message(message)
+        await SMTP.send_message(message)
     return messages.INTERNAL_SERVER_ERROR
 
 
