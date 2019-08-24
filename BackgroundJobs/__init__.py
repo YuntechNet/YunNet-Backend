@@ -1,1 +1,1 @@
-from .mac_update import mac_update
+from .switch_update import switch_update

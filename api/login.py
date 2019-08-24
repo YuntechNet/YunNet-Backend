@@ -5,7 +5,7 @@ from sanic import Blueprint
 from sanic_openapi import doc, api
 from sanic_openapi.doc import JsonBody
 
-from Base.jwt_payload import jwt_payload
+from Base import jwt_payload
 from Query.user import User
 from Query.permission import Permission
 from hashlib import sha256

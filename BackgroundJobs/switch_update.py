@@ -5,17 +5,17 @@ from aiomysql.cursors import DictCursor
 from aiohttp.web_response import Response
 
 
-class mac_update_status:
+class switch_update_status:
     running: bool = False
     last_run: datetime = None
 
 
-async def mac_update(api_endpoint: str):
+async def switch_update(api_endpoint: str):
     while True:
-        if mac_update_status.last_run is not None:
+        if switch_update_status.last_run is not None:
             # update already run
             last_run = datetime.now()
-            await do_mac_update(api_endpoint)
+            await do_switch_update(api_endpoint)
             # calculate next run delay
             nextrun = datetime.now()
             nextrun = nextrun.replace(
@@ -27,7 +27,7 @@ async def mac_update(api_endpoint: str):
         else:
             # backend just started, do update now
             last_run = datetime.now()
-            await do_mac_update(api_endpoint)
+            await do_switch_update(api_endpoint)
             # calculate next run delay
             nextrun = datetime.now()
             nextrun = nextrun.replace(
@@ -42,10 +42,10 @@ async def mac_update(api_endpoint: str):
             await asyncio.sleep(delta.total_seconds())
 
 
-async def do_mac_update(api_endpoint: str):
-    if mac_update_status.running is True:
+async def do_switch_update(api_endpoint: str):
+    if switch_update_status.running is True:
         return
-    mac_update_status.running = True
+    switch_update_status.running = True
     try:
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
@@ -98,5 +98,5 @@ async def do_mac_update(api_endpoint: str):
                             "UPDATE `variable` SET `value` = '0' WHERE `variable`.`name` = 'source_verify_changed'"
                         )
     except Exception as e:
-        mac_update_status.running = False
+        switch_update_status.running = False
         raise e

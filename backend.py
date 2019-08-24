@@ -1,5 +1,5 @@
 import asyncio
-from BackgroundJobs import mac_update
+from BackgroundJobs import switch_update
 from Base import aiohttpSession, SMTP, SQLPool, messages
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
@@ -51,19 +51,19 @@ async def init(app, loop):
             print("Initializing SMTP...")
             await SMTP.init(config.SMTP_CLIENT_PARAMETERS, config.SMTP_CREDENTIALS)
         # init mongo log
-        if config.DEBUG_ENABLE_MONGO or not config.DEBUG:
+        if config.DEBUG_ENABLE_MONGO or (not config.DEBUG):
             print("Initializing MongoDB...")
             app.mongo = SimpleNamespace()
             app.mongo.motor_client = AsyncIOMotorClient(config.MONGODB_URI)
             app.mongo.log_db = app.mongo.motor_client["yunnet"]
             app.mongo.log_collection = app.mongo.log_db["log"]
         # init aiomysql pool
-        if config.DEBUG_ENABLE_SQL or not config.DEBUG:
+        if config.DEBUG_ENABLE_SQL or (not config.DEBUG):
             print("Initializing aiomysql...")
             await SQLPool.init_pool(**config.SQL_CREDENTIALS)
             SQLPool.debug = config.DEBUG_PRINT_SQL_ONLY
         # MAC updating task
-        loop.create_task(mac_update(config.MAC_UPDATER_ENDPOINT))
+        loop.create_task(switch_update(config.MAC_UPDATER_ENDPOINT))
     except Exception as ex:
         error_logger.critical(traceback.format_exc())
         raise ex
