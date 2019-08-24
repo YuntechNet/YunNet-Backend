@@ -32,8 +32,9 @@ Password salt
 PASSWORD_SALT = "PutYourSuperLongSaltSecretHereForPasswordHash"
 
 """
-JWT secret
+JWT configuration
 """
+CUSTOM_JWT_SECRET = True # Generates new secret when backend starts
 JWT = {
     "useRSA": False,  # RSA support is at low priority
     "jwtSecret": "PutYourLongJsonWebTokenSecretHereForVerifyingSignature",
