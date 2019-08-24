@@ -121,7 +121,8 @@ class User:
                     )
                     return False
 
-    async def set_group(self, username, group_id):
+    @staticmethod
+    async def set_group(username, group_id):
         """
 
         Args:

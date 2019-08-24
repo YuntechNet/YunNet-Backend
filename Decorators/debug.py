@@ -1,7 +1,7 @@
 from functools import wraps
 from sanic.response import json
 from sanic.request import Request
-
+from Base import messages
 
 def debug(permission_code):
     def decorator(f):
@@ -16,8 +16,8 @@ def debug(permission_code):
                 response = await f(request, *args, **kwargs)
                 return response
             else:
-                return json({"status": "service_unavailable"}, 503)
-
+                return messages.SERVICE_UNAVAILABLE
+                
         return debug_decorator
 
     return decorator
