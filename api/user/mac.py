@@ -72,7 +72,7 @@ async def bp_ip_set_owned_ip_mac(request, username, ip):
     if await MAC.set_mac(target_ip["ip"], mac):
         return messages.OPERATION_SUCCESS
     else:
-        error_logger.error("operation fail")
+        error_logger.error("Operation failed")
         error_logger.error(request.url)
         error_logger.error(target_ip)
         error_logger.error(mac)

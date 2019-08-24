@@ -52,10 +52,13 @@ class user_info_doc(api.API):
 @permission("index.userinfo.view")
 async def bp_user_info(request, username):
     try:
+        if request.args["token_username"] != username:
+            return messages.NO_PERMISSION
+
         user = await Userinfo.get_userinfo(username)
         ip = await Ip.get_user_ip_mac(username)
-        bed = await Bed.get_user_bed_info(username)
         group = await Group.get_user_group(username)
+        # bed = await Bed.get_user_bed_info(username)
 
         # bed_type = "一般房"
         # if bed["ip_type"] == 1:
@@ -77,6 +80,5 @@ async def bp_user_info(request, username):
         logger.warning(request.url + " error occur")
         logger.warning("user:" + str(user))
         logger.warning("ip:" + str(ip))
-        logger.warning("bed:" + str(bed))
         logger.warning("group:" + str(group))
         return messages.INTERNAL_SERVER_ERROR
