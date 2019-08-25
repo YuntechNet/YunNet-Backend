@@ -1,3 +1,4 @@
+from aiomysql import DictCursor
 from pymysql import MySQLError
 from sanic.log import logger, error_logger
 
@@ -22,7 +23,7 @@ class Bed:
 
         """
         async with SQLPool.acquire() as conn:
-            async with conn.cursor() as cur:
+            async with conn.cursor(DictCursor) as cur:
                 sql = (
                     "SELECT i.description, ip_type_id "
                     "FROM `user` AS u "
@@ -38,14 +39,14 @@ class Bed:
                 if data is None:
                     return None
 
-                if data[0] == "":
+                if data["description"] == "":
                     error_logger.error(
                         "Dorm Ip found but description missing: {}".format(username)
                     )
                     return messages.INTERNAL_SERVER_ERROR
 
-                bed = data[0].split(".")
+                bed = data["description"].split(".")
 
-                dicts = {"portal": bed[0], "bed": bed[1], "ip_type": data[1]}
+                dicts = {"portal": bed[0], "bed": bed[1], "ip_type": data["ip_type_id"]}
 
         return dicts

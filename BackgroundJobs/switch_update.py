@@ -66,9 +66,9 @@ async def do_switch_update(api_endpoint: str):
                     "SELECT `value` FROM `variable` WHERE `name` = 'source_verify_changed'"
                 )
                 source_verify_changed = await cur.fetchone()["value"]
-                ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`  FROM `ip` WHERE `is_updated` = 0"
+                ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`  FROM `iptable` WHERE `is_updated` = 0"
                 if (mac_verify_changed and mac_verify) or (source_verify_changed and source_verify_changed):
-                    ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`  FROM `ip`"
+                    ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`  FROM `iptable`"
                 await cur.execute(ip_query)
                 ip = cur.fetchall()
                 switch_query = "SELECT `switch_id`, `upper_id`, `upper_port`, `upper_port_type`, `account`, `password`, `vlan`, `machine_type`, `port_description`, `port_type` FROM `switch`"
@@ -88,7 +88,7 @@ async def do_switch_update(api_endpoint: str):
                     resp: Response = resp
                     if resp.status == 200:
                         update_query = (
-                            "UPDATE `ip` SET `is_updated` = '1' WHERE `updated` = '0'"
+                            "UPDATE `iptable` SET `is_updated` = '1' WHERE `is_updated` = '0'"
                         )
                         await cur.execute(update_query)
                         await cur.execute(

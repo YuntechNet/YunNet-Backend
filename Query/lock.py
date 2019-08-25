@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from aiomysql import DictCursor
 from pymysql import MySQLError
 from sanic.log import logger
 from Base import SQLPool
@@ -31,24 +33,24 @@ class Lock:
 
         """
         async with SQLPool.acquire() as conn:
-            async with conn.cursor() as cur:
+            async with conn.cursor(DictCursor) as cur:
                 sql = "SELECT * FROM `lock` WHERE `ip` = %s ORDER BY `lock_date` DESC"
                 para_input = ip
                 await cur.execute(sql, para_input)
                 data = await cur.fetchall()
-                key = [
-                    "lock_id",
-                    "lock_type_id",
-                    "ip",
-                    "lock_date",
-                    "unlock_date",
-                    "description",
-                    "lock_by_user_id",
-                ]
+                # key = [
+                #     "lock_id",
+                #     "lock_type_id",
+                #     "ip",
+                #     "lock_date",
+                #     "unlock_date",
+                #     "description",
+                #     "lock_by_user_id",
+                # ]
+                #
+                # dicts = [dict(zip(key, d)) for d in data]
 
-                dicts = [dict(zip(key, d)) for d in data]
-
-        return dicts
+        return data
 
     @staticmethod
     async def set_lock(

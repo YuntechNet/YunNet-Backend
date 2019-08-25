@@ -47,12 +47,12 @@ class user_ip_get_own_ip_doc(api.API):
 
 @user_ip_get_own_ip_doc
 @bp_ip.route("/ip", methods=["GET"])
+@permission("system.dormitory.ip.view")
 async def bp_ip_get_owned_ip(request, username):
     ips = await Ip.get_user_own_ip(username)
 
     remove_key_list = [
         "switch_id",
-        # "status_id",
         "ip_type_id",
         "port",
         "port_type",
@@ -63,12 +63,15 @@ async def bp_ip_get_owned_ip(request, username):
     for ip in ips:
         for key in remove_key_list:
             ip.pop(key)
-        status_id = ip.pop("status_id")
-        if status_id == IpStatus.UNLOCK:
+
+        status = ip.pop("lock_id")
+        if status is None:
             ip["lock_status"] = "UNLOCKED"
-        elif status_id == IpStatus.LOCK:
+        else:
             ip["lock_status"] = "LOCKED"
-        elif status_id == IpStatus.UNLIMITED:
+
+        status = ip.pop("is_unlimited")
+        if status == 1:
             ip["lock_status"] = "UNLIMITED"
 
     response = json(ips)

@@ -4,6 +4,7 @@ from sanic_openapi import doc, api
 from hashlib import sha256
 
 from Base import messages
+from Decorators import permission
 from Query import User
 
 bp_password = Blueprint("password")
@@ -50,9 +51,12 @@ class user_set_owned_ip_mac_doc(api.API):
     response = [SuccessResp, FailResp, AuthResp]
 
 
+@user_set_owned_ip_mac_doc
 @bp_password.route("/password", methods=["PATCH"])
+@permission("index.userinfo.change_passwd.view")
 async def bp_user_info(request, username):
     config = request.app.config
+    username = request.args["token_username"]
     old_password_raw = request.json["old_password"]
     new_password_raw = request.json["new_password"]
 

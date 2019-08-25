@@ -1,3 +1,4 @@
+from aiomysql import DictCursor
 from sanic.log import logger
 
 from Base import SQLPool
@@ -14,7 +15,7 @@ class Group:
 
         """
         async with SQLPool.acquire() as conn:
-            async with conn.cursor() as cur:
+            async with conn.cursor(DictCursor) as cur:
                 sql = (
                     "SELECT g.gid, g.name, g.description "
                     "FROM `user` AS u "
@@ -29,7 +30,4 @@ class Group:
                 if data is None:
                     return None
 
-                key = ["gid", "name", "description"]
-                dicts = [dict(zip(key, d)) for d in data]
-
-        return dicts
+        return data

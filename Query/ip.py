@@ -1,5 +1,6 @@
 import datetime
 
+from aiomysql import DictCursor
 from pymysql import MySQLError
 from sanic.log import logger
 
@@ -70,7 +71,6 @@ class Ip:
             {
                 "ip": str,
                 "switch_id": int,
-                "status_id": int,
                 "ip_type_id": int,
                 "mac": str,
                 "port": int,
@@ -79,11 +79,12 @@ class Ip:
                 "uid": int,
                 "gid": int,
                 "description": str,
+                "lock_id": int,
             }
 
         """
         async with SQLPool.acquire() as conn:
-            async with conn.cursor() as cur:
+            async with conn.cursor(DictCursor) as cur:
                 sql = (
                     "SELECT i.* "
                     "FROM `iptable` AS i "
@@ -97,18 +98,4 @@ class Ip:
                 if data is None:
                     return None
 
-                key = [
-                    "ip",
-                    "switch_id",
-                    "status_id",
-                    "ip_type_id",
-                    "mac",
-                    "port",
-                    "port_type",
-                    "is_updated",
-                    "uid",
-                    "gid",
-                    "description",
-                ]
-                dicts = [dict(zip(key, d)) for d in data]
-                return dicts
+                return data

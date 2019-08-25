@@ -1,3 +1,4 @@
+from aiomysql import DictCursor
 from pymysql import MySQLError
 from sanic.log import logger
 from Base import SQLPool
@@ -82,14 +83,14 @@ class User:
 
         """
         async with SQLPool.acquire() as conn:
-            async with conn.cursor() as cur:
+            async with conn.cursor(DictCursor) as cur:
                 sql = "SELECT `password_hash` FROM `user` WHERE `username` = %s"
                 para_input = username
                 await cur.execute(sql, para_input)
                 data = await cur.fetchone()
                 if data is None or len(data) == 0:
                     return ""
-        return data[0]
+        return data["password_hash"]
 
     @staticmethod
     async def set_password(username: str, password: str) -> bool:

@@ -4,6 +4,7 @@ from sanic import Blueprint
 from sanic_openapi import doc, api
 
 from Base import messages
+from Decorators import permission
 from Query import MAC
 from Query.ip import Ip
 
@@ -58,8 +59,9 @@ class user_set_owned_ip_mac_doc(api.API):
 
 @user_set_owned_ip_mac_doc
 @bp_mac.route("/<ip>/mac", methods=["PATCH"])
+@permission("index.userinfo.change_mac.change_mac")
 async def bp_ip_set_owned_ip_mac(request, username, ip):
-
+    username = request.args["token_username"]
     mac = request.json["mac"]
 
     ips = await Ip.get_user_own_ip(username)

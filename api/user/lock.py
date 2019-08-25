@@ -5,6 +5,7 @@ from sanic_openapi import api, doc
 
 from Base import messages
 from Base.types import LockTypes
+from Decorators import permission
 from Query.ip import Ip
 from Query.lock import Lock
 
@@ -49,8 +50,9 @@ class user_ip_lock_list_doc(api.API):
 
 @user_ip_lock_list_doc
 @bp_lock.route("/<ip>/lock", methods=["GET"])
+@permission("index.lock_table.view")
 async def bp_user_ip_lock_list(request, username, ip):
-
+    username = request.args["token_username"]
     ips = await Ip.get_user_own_ip(username)
     target_ip = next((i for i in ips if i["ip"] == ip), None)
 
@@ -59,7 +61,7 @@ async def bp_user_ip_lock_list(request, username, ip):
         return messages.NO_PERMISSION
 
     lock_log = await Lock.get_lock(target_ip["ip"])
-    logger.warning(lock_log)
+
 
     for log in lock_log:
         if log["lock_date"] is not None:

@@ -1,3 +1,4 @@
+from aiomysql import DictCursor
 from pymysql import MySQLError
 from Base import SQLPool
 from sanic.log import logger
@@ -27,7 +28,7 @@ class Userinfo:
 
         """
         async with SQLPool.acquire() as conn:
-            async with conn.cursor() as cur:
+            async with conn.cursor(DictCursor) as cur:
                 sql: str = "SELECT * FROM `user` WHERE `username` = %s"
                 para_input = username
                 await cur.execute(sql, para_input)
@@ -36,17 +37,8 @@ class Userinfo:
                 if data is None:
                     return None
 
-                key = [
-                    "uid",
-                    "username",
-                    "password_hash",
-                    "nick",
-                    "department",
-                    "back_mail",
-                ]
-                dicts = dict(zip(key, data))
-
-        return dicts
+                logger.warning(data)
+        return data
 
     # TODO(biboy1999): WIP management logic
     # def set_userinfo(self, userinfo: tuple) -> bool:

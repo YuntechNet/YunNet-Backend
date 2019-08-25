@@ -52,8 +52,7 @@ class user_info_doc(api.API):
 @permission("index.userinfo.view")
 async def bp_user_info(request, username):
     try:
-        if request.args["token_username"] != username:
-            return messages.NO_PERMISSION
+        username = request.args["token_username"]
 
         user = await Userinfo.get_userinfo(username)
         ip = await Ip.get_user_ip_mac(username)
