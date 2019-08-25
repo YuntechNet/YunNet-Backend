@@ -1,8 +1,8 @@
 import asyncio
 from datetime import datetime, timedelta
-from Base import SQLPool, aiohttpSession
+from Base import SQLPool, aiohttpSession, SMTP
 from aiomysql.cursors import DictCursor
-from aiohttp.web_response import Response
+from aiohttp.client import ClientResponse
 
 
 class switch_update_status:
@@ -42,9 +42,12 @@ async def switch_update(api_endpoint: str):
             await asyncio.sleep(delta.total_seconds())
 
 
-async def do_switch_update(api_endpoint: str):
-    if switch_update_status.running is True:
+async def do_switch_update(api_endpoint: str, forced: bool=False):
+    if switch_update_status.running and not forced:
         return
+    if forced:
+        while switch_update_status.running:
+            await asyncio.sleep(10)
     switch_update_status.running = True
     try:
         async with SQLPool.acquire() as conn:
@@ -67,7 +70,7 @@ async def do_switch_update(api_endpoint: str):
                 )
                 source_verify_changed = await cur.fetchone()["value"]
                 ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`  FROM `iptable` WHERE `is_updated` = 0"
-                if (mac_verify_changed and mac_verify) or (source_verify_changed and source_verify_changed):
+                if mac_verify_changed or source_verify_changed:
                     ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`  FROM `iptable`"
                 await cur.execute(ip_query)
                 ip = cur.fetchall()
@@ -85,8 +88,8 @@ async def do_switch_update(api_endpoint: str):
                 async with aiohttpSession.session.post(
                     api_endpoint, json=payload
                 ) as resp:
-                    resp: Response = resp
-                    if resp.status == 200:
+                    resp: ClientResponse = resp
+                    if resp.status == 200 or resp.status == 202:
                         update_query = (
                             "UPDATE `iptable` SET `is_updated` = '1' WHERE `is_updated` = '0'"
                         )
@@ -97,6 +100,13 @@ async def do_switch_update(api_endpoint: str):
                         await cur.execute(
                             "UPDATE `variable` SET `value` = '0' WHERE `variable`.`name` = 'source_verify_changed'"
                         )
+                    if resp.status == 202:
+                        body = resp.json()
+                        update_failed_query = (
+                            "UPDATE `iptable` SET `is_updated` = '0' WHERE `ip` = %s"
+                        )
+                        await cur.executemany(update_failed_query, body["ip"])
+                        
     except Exception as e:
         switch_update_status.running = False
         raise e
