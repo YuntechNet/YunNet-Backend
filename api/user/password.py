@@ -71,7 +71,7 @@ async def bp_user_info(request, username):
     if db_password != old_password_hashed:
         return messages.PASSWORD_NOT_MATCH
 
-    if User.set_password(username, new_passowrd_hashed):
+    if await User.set_password(username, new_passowrd_hashed):
         return messages.OPERATION_SUCCESS
     else:
         return messages.INTERNAL_SERVER_ERROR
