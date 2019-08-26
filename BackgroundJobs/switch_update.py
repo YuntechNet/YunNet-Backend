@@ -49,6 +49,7 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
         return
     now = datetime.utcnow()
     async with switch_update_status.lock:
+        logger.info("[YunNet.SwitchUpdate] Updating switch...")
         async with SQLPool.acquire() as conn:
             #panda step 1, grab all panda IP
             panda_ip_list = []
@@ -137,7 +138,7 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                         subject += update_failed_ip
                     else:
                         subject += "Failed to update."
-                    logger.error(subject)
+                    logger.info(subject)
                     if SMTP.initialized:
                         message = MIMEText(update_failed_ip)
                         message["From"] = SMTP.sender
