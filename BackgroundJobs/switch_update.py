@@ -47,7 +47,7 @@ async def switch_update(api_endpoint: str):
 async def do_switch_update(api_endpoint: str, forced: bool=False):
     if switch_update_status.lock.locked() and not forced:
         return
-    now = datetime.utcnow()
+    now = datetime.now()
     async with switch_update_status.lock:
         logger.info("[YunNet.SwitchUpdate] Updating switch...")
         async with SQLPool.acquire() as conn:
