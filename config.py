@@ -11,7 +11,7 @@ Sanic debug mode
 """
 DEBUG = True
 DEBUG_ENABLE_SMTP = False
-DEBUG_ENABLE_SQL = False
+DEBUG_ENABLE_SQL = True
 DEBUG_PRINT_SQL_ONLY = False
 DEBUG_ENABLE_MONGO = False
 
@@ -54,10 +54,10 @@ SQL_CREDENTIALS is the parameters of Connection constructor in PyMySQL
 https://pymysql.readthedocs.io/en/latest/modules/connections.html#pymysql.connections.Connection
 """
 SQL_CREDENTIALS = {
-    "host": "db",
+    "host": "127.0.0.1",
     "port": 3306,
-    "user": "",
-    "password": "",
+    "user": "root",
+    "password": "devonly",
     "db": "YunNet",
     "autocommit": True,
 }
@@ -65,12 +65,12 @@ SQL_CREDENTIALS = {
 """
 Setup MongoDB for logging
 """
-MONGODB_URI = "mongodb://mongo:27017"
+MONGODB_URI = "mongodb://127.0.0.1:27017"
 
 """
 Google reCaptcha configuration
 """
-RECAPTCHA = {"enabled": True, "secret": ""}
+RECAPTCHA = {"enabled": False, "secret": ""}
 
 """
 Sanic app configuration

@@ -121,36 +121,3 @@ class User:
                         )
                     )
                     return False
-
-    @staticmethod
-    async def set_group(username, group_id):
-        """
-
-        Args:
-            username:username
-            group_id: group id
-
-        Returns:
-            int. count of affected row.
-        """
-        async with SQLPool.acquire() as conn:
-            async with conn.cursor() as cur:
-                sql = (
-                    "UPDATE `group_user` AS gu "
-                    "INNER JOIN `user` AS u ON gu.uid = u.uid "
-                    "SET gu.gid = %s "
-                    "WHERE u.username = %s "
-                )
-
-                para_input = (group_id, username)
-                try:
-                    row_affected = await cur.execute(sql, para_input)
-                    await conn.commit()
-                    return row_affected
-                except MySQLError as e:
-                    conn.rollback()
-                    logger.error("got error {}, {}".format(e, e.args[0]))
-                    logger.error(
-                        "fail to set user SQL:{}".format(cur.mogrify(sql, para_input))
-                    )
-                    return row_affected
