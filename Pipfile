@@ -12,6 +12,7 @@ aiomysql = "*"
 aiosmtplib = "*"
 sanic-limiter = "*"
 black = "==19.3b0"
+gunicorn = "*"
 
 [dev-packages]
 pycodestyle = "*"
