@@ -1,11 +1,12 @@
 import asyncio
 from sanic.log import logger
 from datetime import datetime, timedelta
-from Base import SQLPool, aiohttpSession, SMTP
+import json
 from email.mime.text import MIMEText
 from aiomysql.cursors import DictCursor
 from aiohttp.client import ClientResponse
 
+from Base import SQLPool, aiohttpSession, SMTP
 
 class switch_update_status:
     lock = asyncio.Lock()
@@ -59,38 +60,41 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                 panda_ip_list = await cur.fetchall()
             async with conn.cursor(DictCursor) as cur:
                 # panda step 2, set panda IP not update on 0AM and 7AM
-                if now.hour() == 0 or now.hour() == 7: 
+                if now.hour == 0 or now.hour == 7: 
                     panda_lock_query = "UPDATE `iptable` SET `is_updated` = '0' WHERE `ip_type_id` = '2'"
                     await cur.execute(panda_lock_query)
                 # grab variables
                 await cur.execute(
                     "SELECT `value` FROM `variable` WHERE `name` = 'mac_verify'"
                 )
-                mac_verify = await cur.fetchone()["value"]
+                mac_verify = (await cur.fetchone())["value"]
                 await cur.execute(
                     "SELECT `value` FROM `variable` WHERE `name` = 'mac_verify_changed'"
                 )
-                mac_verify_changed = await cur.fetchone()["value"]
+                mac_verify_changed = (await cur.fetchone())["value"]
                 await cur.execute(
                     "SELECT `value` FROM `variable` WHERE `name` = 'source_verify'"
                 )
-                source_verify = await cur.fetchone()["value"]
+                source_verify = (await cur.fetchone())["value"]
                 await cur.execute(
                     "SELECT `value` FROM `variable` WHERE `name` = 'source_verify_changed'"
                 )
-                source_verify_changed = await cur.fetchone()["value"]
+                source_verify_changed = (await cur.fetchone())["value"]
                 # grap IP
                 ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`  FROM `iptable` WHERE `is_updated` = 0"
                 if mac_verify_changed or source_verify_changed:
                     ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`  FROM `iptable`"
                 await cur.execute(ip_query)
-                ip = cur.fetchall()
+                ip = await cur.fetchall()
                 # grab switches
                 switch_query = "SELECT `switch_id`, `upper_id`, `upper_port`, `upper_port_type`, `account`, `password`, `vlan`, `machine_type`, `port_description`, `port_type` FROM `switch`"
                 await cur.execute(switch_query)
-                switch = cur.fetchall()
+                switch = await cur.fetchall()
+                for s in switch:
+                    s["port_description"] = json.loads(s["port_description"])
+                    s["port_type"] = json.loads(s["port_type"])
                 # panda step 3, change panda IP to locked state
-                if now.hour() < 7: 
+                if now.hour < 7: 
                     for entry in ip:
                         if entry["ip"] in panda_ip_list:
                             entry["lock"] = True
