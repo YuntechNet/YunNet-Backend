@@ -69,7 +69,7 @@ async def bp_user_change_password(request, username):
     db_password = await User.get_password(username)
 
     if db_password != old_password_hashed:
-        return messages.PASSWORD_NOT_MATCH
+        return messages.PASSWORD_DOES_NOT_MATCH
 
     if await User.set_password(username, new_passowrd_hashed):
         return messages.OPERATION_SUCCESS

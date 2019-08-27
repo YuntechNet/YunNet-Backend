@@ -8,6 +8,7 @@ from .netflow import bp_netflow
 from .register import bp_login
 from .teapot import bp_teapot
 from .verify_mail import bp_verify_mail
+from .forgot_password import bp_forgot_passowrd
 
 api = Blueprint.group(
     user,
@@ -17,5 +18,6 @@ api = Blueprint.group(
     bp_netflow,
     bp_verify_mail,
     bp_teapot,
+    bp_forgot_passowrd,
     url_prefix="/api",
 )
