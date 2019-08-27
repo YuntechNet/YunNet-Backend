@@ -28,18 +28,18 @@ async def bulk_import(csv_string: str, password_salt):
     fail_list = []
     if BulkImportStatus.lock.locked():
         logger.error("[bulk_import] Please don't run bulk import more than 1 instance!")
-        message = "[bulk_import] Please don't run bulk import more than 1 instance!"
+        BulkImportStatus.message = "[bulk_import] Please don't run bulk import more than 1 instance!"
         return
 
     async with BulkImportStatus.lock:
         logger.info("[bulk_import] Starting...")
-        message = "[bulk_import] Starting..."
+        BulkImportStatus.message = "[bulk_import] Starting..."
         try:
             async with SQLPool.acquire() as conn:
                 async with conn.cursor() as cur:
                     rows = reader(csv_string.split("\n"))
                     for index, row in enumerate(rows):
-                        message = "[bulk_import] Current row :{0}/{1}".format(index+1, len(rows))
+                        BulkImportStatus.message = "[bulk_import] Current row :{0}/{1}".format(index+1, len(rows))
                         logger.debug("[bulk_import] Fetched: {}".format(row))
 
                         bed = row[0].strip().upper()
