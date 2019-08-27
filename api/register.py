@@ -1,8 +1,11 @@
 from sanic.log import logger
 from sanic.response import json
 from sanic_openapi import doc, api
+from email.mime.text import MIMEText
+from hashlib import sha256
+from time import time
 
-from Base import messages
+from Base import messages, SMTP
 from Query import User
 from Query.bed import Bed
 from Query.group import Group
@@ -56,7 +59,7 @@ class user_register_doc(api.API):
 @bp_login.route("/register", methods=["POST"])
 async def bp_register(request):
     username = request.json["username"]
-    bed = request.json["bed"]
+    bed = request.json["bed"]                
     user_bed = await Bed.get_user_bed_info(username)
 
     if user_bed is None:
@@ -64,11 +67,35 @@ async def bp_register(request):
 
     group_list = await Group.get_user_group(username)
     if any(group["gid"] == 3 for group in group_list):
-        return messages.REGISTER_ALREADY
+        return messages.ALREADY_REGISTERED
 
     if user_bed["bed"] == bed:
         await Group.remove_user_group(username, 2)
         if await Group.add_user_group(username, 3):
+            # activation success
+            content = (
+                "請點擊下方連結驗證您的帳號：\n"
+                "https://yunnet.yuntech.com.tw/#/verify?={0}\n"
+                "\n"
+                "Please click following link to activate your account:\n"
+                "https://yunnet.yuntech.com.tw/#/verify?={0}\n"
+                "\n"
+                "\n"
+                "如須設定網路教學，請點擊下方連結（中文版）：\n"
+                "MISSING_URL\n"
+                "\n"
+                "If you need instruction on configuring internet, please click the following link (English):\n"
+                "MISSING_URL\n"
+            )
+            hexdigest = username + repr(time())
+            hexdigest = sha256(hexdigest.encode()).hexdigest()
+            activation_code = username + "_" + hexdigest
+            "INSERT INTO `token` (`uid`, `token`) VALUES (%s, %s)"
+            mail = MIMEText(content.format(activation_code))
+            mail["From"] = SMTP.sender
+            mail["To"] = username + "@yuntech.edu.tw"
+            mail["Subject"] = "YunNet 驗證帳號"
+            await SMTP.send_message(mail)
             resp = messages.REGISTER_SUCCESS
         else:
             resp = messages.INTERNAL_SERVER_ERROR

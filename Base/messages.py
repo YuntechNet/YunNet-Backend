@@ -8,7 +8,7 @@ def msg(msg):
 # user register
 REGISTER_SUCCESS = json(msg("REGISTER_SUCCESS"), 200)
 REGISTER_FAIL = json(msg("REGISTER_FAIL"), 400)
-REGISTER_ALREADY = json(msg("REGISTER_ALREADY"), 400)
+ALREADY_REGISTERED = json(msg("ALREADY_REGISTERED"), 400)
 # user login
 RECAPTCHA_FAILED = json(msg("RECAPTCHA_FAILED"), status=400)
 LOGIN_FAILED = json(msg("LOGIN_FAILED"), status=400)
