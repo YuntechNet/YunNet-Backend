@@ -1,6 +1,43 @@
 version: '3'
 services:
+  db:
+    restart: always
+    #image: mariadb
+    build:
+      context: ./yunnet-db
+      dockerfile: Dockerfile
+    environment:
+      - MYSQL_USER=backend
+      - MYSQL_PASSWORD=devonly
+      - MYSQL_ROOT_PASSWORD=toor
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_DATABASE=default_schema
+    #volumes:
+    #  - /var/backend/mysql_data:/var/lib/mysql:rw,delegated
+    #  - /var/backend/mysqld.sock:/var/run/mysqld/mysqld.sock
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8080:80"
+  mongo:
+    restart: always
+    image: mongo
+  mongo-express:
+    restart: always
+    depends_on:
+      - mongo
+    image: mongo-express
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: 'user'
+      ME_CONFIG_BASICAUTH_PASSWORD: 'password'
+    ports:
+      - "8081:8081"
   backend:
+    depends_on:
+      - db
+      - mongo
     restart: always
     build:
       context: .
@@ -8,26 +45,4 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ~/.config/YunNet-Backend/config.py:/backend/config.py
-  db:
-    restart: always
-    build:
-      context: ./yunnet-db
-      dockerfile: Dockerfile
-    environment:
-      - MYSQL_ROOT_PASSWORD="toor"
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    ports:
-      - "8080:8080"
-  mongo-express:
-    image: mongo-express
-    environment:
-      - ME_CONFIG_BASICAUTH_USERNAME="user"
-      - ME_CONFIG_BASICAUTH_PASSWORD="password"
-    ports:
-      - "8081:8001"
-  mongo:
-    restart: always
-    image: mongo
-
+      - /var/backend/config.py:/backend/config.py
