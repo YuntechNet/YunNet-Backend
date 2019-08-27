@@ -17,6 +17,9 @@ ACTIVATION_SUCCESS = json(msg("ACTIVATION_SUCCESS"))
 ACTIVATION_FAILED = json(msg("ACTIVATION_FAILED"), status=401)
 # user password
 PASSWORD_NOT_MATCH = json(msg("PASSWORD_NOT_MATCH"), status=400)
+# Token verify
+TOKEN_EXPIRED = json(msg("TOKEN_EXPIRED"), status=410)
+INVALID_TOKEN = json(msg("INVALID_TOKEN"), status=400)
 
 OPERATION_SUCCESS = json(msg("OPERATION_SUCCESS"), status=200)
 INVALID_SESSION = json(msg("INVALID_SESSION"), status=401)

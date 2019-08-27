@@ -11,7 +11,6 @@ class forgot_password_doc(api.API):
 
     class consumes:
         username = doc.String("Username")
-        email = doc.String("User's email")
 
     consumes = doc.JsonBody(vars(consumes))
 
@@ -40,7 +39,6 @@ class forgot_password_doc(api.API):
 @bp_login.route("/forgot-password", methods=["POST"])
 async def bp_user_forgot_password(request):
     username = request.json["username"]
-    email = request.json["email"]
     # TODO recover jwt token
 
     # TODO send recover token
