@@ -44,33 +44,46 @@ class User:
     #             logger.error("fail to add user SQL:{}".format(
     #                 cur.mogrify(sql_user, para_input2)))
     #             return False
+    @staticmethod
+    async def get_user_id(username: str):
+        """Get actual uid by username
 
-    # TODO(biboy1999):
-    # async def get_user_id(self, query: str) -> str:
-    #     """Get actual username by username, bed, ip
-    #
-    #     Args:
-    #         query -- username, bed, or IP
-    #
-    #     Returns:str, username, if not found return empty string.
-    #     """
-    #     sql = (
-    #         "SELECT u.`uid` "
-    #         "FROM `user` as u "
-    #         "INNER JOIN `bed` as b ON u.`bed` = b.`bed` "
-    #         "INNER JOIN `ip`  as i ON b.`ip` = i.`ip` "
-    #         "WHERE %s IN (u.`username`, b.`bed`, i.`ip`)"
-    #     )
-    #     para_input = query
-    #     async with SQLPool.acquire() as conn:
-    #         async with conn.cursor() as cur:
-    #             await cur.execute(sql, para_input)
-    #             data = await cur.fetchone()
-    #
-    #             if len(data) == 0:
-    #                 return ""
-    #
-    #     return data[0]
+        Args:
+            username
+        Returns:int, user id, if not found return None.
+        """
+        sql = "SELECT uid FROM `user` WHERE `username` = %s "
+        para_input = username
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                await cur.execute(sql, para_input)
+                data = await cur.fetchone()
+                await conn.commit()
+                if len(data) == 0:
+                    return None
+
+        return data["uid"]
+
+    @staticmethod
+    async def get_username(uid: int):
+        """Get actual username by uid
+
+        Args:
+            uid
+        Returns:str, username, if not found return None.
+        """
+        sql = "SELECT username FROM `user` WHERE `uid` = %s "
+        para_input = uid
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                await cur.execute(sql, para_input)
+                data = await cur.fetchone()
+                await conn.commit()
+                if len(data) == 0:
+                    return None
+
+        return data["username"]
+
     @staticmethod
     async def get_password(username: str) -> str:
         """Get user's password hash
