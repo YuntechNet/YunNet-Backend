@@ -1,9 +1,11 @@
+from sanic.log import logger
 from sanic.response import json
 from sanic_openapi import doc, api
 
 from Base import messages
 from Query import User
 from Query.bed import Bed
+from Query.group import Group
 
 from .login import bp_login
 
@@ -55,13 +57,18 @@ class user_register_doc(api.API):
 async def bp_register(request):
     username = request.json["username"]
     bed = request.json["bed"]
-    user_bed = await Bed().get_user_bed_info(username)
+    user_bed = await Bed.get_user_bed_info(username)
 
     if user_bed is None:
         return messages.NO_PERMISSION
-    # TODO(biboy1999): reject repeat register
+
+    group_list = await Group.get_user_group(username)
+    if any(group["gid"] == 3 for group in group_list):
+        return messages.REGISTER_ALREADY
+
     if user_bed["bed"] == bed:
-        if await User.set_group(username, 3):
+        await Group.remove_user_group(username, 2)
+        if await Group.add_user_group(username, 3):
             resp = messages.REGISTER_SUCCESS
         else:
             resp = messages.INTERNAL_SERVER_ERROR
