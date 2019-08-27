@@ -1,5 +1,7 @@
 from sanic.response import json
 from sanic import Blueprint
+from sanic_openapi import doc, api
+
 from Base import messages
 from Query.group import Group
 from Query.token import Token
@@ -8,6 +10,29 @@ from Query.user import User
 bp_verify_mail = Blueprint("verify-mail")
 
 
+class verify_mail_doc(api.API):
+    class SuccessResp:
+        code = 200
+        description = "On success request"
+
+        class model:
+            message = doc.String("message")
+
+        model = dict(vars(model))
+
+    class FailResp:
+        code = 401
+        description = "On failed request"
+
+        class model:
+            message = doc.String("Error message")
+
+        model = dict(vars(model))
+
+    response = [SuccessResp, FailResp]
+
+
+@verify_mail_doc
 @bp_verify_mail.route("/verify-mail/<token>", methods=["GET"])
 async def verify_mail(request, token):
     db_token = await Token.get_token(token)
