@@ -60,6 +60,7 @@ class user_register_doc(api.API):
 @user_register_doc
 @bp_login.route("/register", methods=["POST"])
 async def bp_register(request):
+    config = request.app.config
     username = request.json["username"]
     bed = request.json["bed"]
     password = request.json["password"]
@@ -94,17 +95,6 @@ async def bp_register(request):
         hexdigest = sha256(hexdigest.encode()).hexdigest()
         activation_code = username + "_" + hexdigest
 
-        # Insert to database
-        uid = await User.get_user_id(username)
-        affect_row = await Token.add_token(uid, activation_code)
-        if not affect_row:
-            return messages.INTERNAL_SERVER_ERROR
-
-        # Set user password
-        op_success = await User.set_password(username, password)
-        if not op_success:
-            return messages.INTERNAL_SERVER_ERROR
-
         # Send mail
         mail = MIMEText(content.format(activation_code))
         mail["From"] = SMTP.sender
@@ -112,6 +102,19 @@ async def bp_register(request):
         mail["Subject"] = "YunNet 驗證帳號"
         await SMTP.send_message(mail)
         resp = messages.REGISTER_SUCCESS
+
+        # Insert to database
+        uid = await User.get_user_id(username)
+        affect_row = await Token.add_token(uid, activation_code)
+        if not affect_row:
+            return messages.INTERNAL_SERVER_ERROR
+
+        # Set user password
+        encode_password = (password + config.PASSWORD_SALT).encode("UTF-8")
+        hashed_password = sha256(encode_password).hexdigest()
+        op_success = await User.set_password(username, hashed_password)
+        if not op_success:
+            return messages.INTERNAL_SERVER_ERROR
 
     else:
         resp = messages.REGISTER_FAIL
