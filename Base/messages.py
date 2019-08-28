@@ -7,11 +7,11 @@ def msg(msg):
 
 # user register
 REGISTER_SUCCESS = json(msg("REGISTER_SUCCESS"), 200)
-REGISTER_FAIL = json(msg("REGISTER_FAIL"), 400)
+REGISTER_FAILED = json(msg("REGISTER_FAILED"), 400)
 ALREADY_REGISTERED = json(msg("ALREADY_REGISTERED"), 400)
 # user login
-RECAPTCHA_FAILED = json(msg("RECAPTCHA_FAILED"), status=400)
-LOGIN_FAILED = json(msg("LOGIN_FAILED"), status=400)
+RECAPTCHA_FAILED = json(msg("RECAPTCHA_FAILED"), status=401)
+LOGIN_FAILED = json(msg("LOGIN_FAILED"), status=401)
 # user activation
 ACTIVATION_SUCCESS = json(msg("ACTIVATION_SUCCESS"))
 ACTIVATION_FAILED = json(msg("ACTIVATION_FAILED"), status=401)
@@ -20,8 +20,9 @@ PASSWORD_DOES_NOT_MATCH = json(msg("PASSWORD_NOT_MATCH"), status=400)
 PASSWORD_SUCCESSFULLY_CHANGED = json(msg("PASSWORD_NOT_MATCH"), status=202)
 # Token verify
 TOKEN_EXPIRED = json(msg("TOKEN_EXPIRED"), status=410)
-INVALID_TOKEN = json(msg("INVALID_TOKEN"), status=400)
-
+INVALID_TOKEN = json(msg("INVALID_TOKEN"), status=401)
+# MAC
+INVALID_MAC = json(msg("INVALID_MAC"), status=400)
 
 ACCEPTED = json(msg("ACCEPTED"), status=202)
 OPERATION_SUCCESS = json(msg("OPERATION_SUCCESS"), status=200)

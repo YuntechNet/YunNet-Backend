@@ -2,6 +2,7 @@ from sanic.log import error_logger
 from sanic.response import json
 from sanic import Blueprint
 from sanic_openapi import doc, api
+import re
 
 from Base import messages
 from Decorators import permission
@@ -67,6 +68,8 @@ async def bp_ip_set_owned_ip_mac(request, username, ip):
     ips = await Ip.get_user_own_ip(username)
     target_ip = next((i for i in ips if i["ip"] == ip), None)
 
+    if re.match("^([0-9A-Fa-f]{12})$", mac) is None:
+        return messages.INVALID_MAC
     # cant edit not owned ip
     if target_ip is None:
         return messages.NO_PERMISSION
@@ -79,4 +82,4 @@ async def bp_ip_set_owned_ip_mac(request, username, ip):
         error_logger.error(target_ip)
         error_logger.error(mac)
         return messages.INTERNAL_SERVER_ERROR
-    pass
+

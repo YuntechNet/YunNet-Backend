@@ -117,6 +117,6 @@ async def bp_register(request):
             return messages.INTERNAL_SERVER_ERROR
 
     else:
-        resp = messages.REGISTER_FAIL
+        resp = messages.REGISTER_FAILED
 
     return resp
