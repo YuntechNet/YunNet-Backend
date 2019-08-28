@@ -34,13 +34,13 @@ async def switch_update(api_endpoint: str):
             # calculate next run delay
             nextrun = datetime.now()
             nextrun = nextrun.replace(
-                hour=nextrun.hour + 1, minute=10, second=0, microsecond=0
+                hour=nextrun.hour + 1, minute=0, second=0, microsecond=0
             )
             delta: timedelta = nextrun - last_run
             if delta.total_seconds() < 60 * 10:  # 10 min
                 # add another hour
                 nextrun = nextrun.replace(
-                    hour=nextrun.hour + 1, minute=10, second=0, microsecond=0
+                    hour=nextrun.hour + 1, minute=0, second=0, microsecond=0
                 )
             await asyncio.sleep(delta.total_seconds())
 
@@ -50,6 +50,15 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
         return
     now = datetime.now()
     async with switch_update_status.lock:
+        # check if service is alive
+        try:
+            await aiohttpSession.session.get(api_endpoint + "/heartbeat")
+            await asyncio.sleep(60 * 10) # wait 10 monutes
+        except Exception as e:
+            logger.error("[YunNet.SwitchUpdate] Can't contact to switch!")
+            logger.exception(e)
+            return
+    
         logger.info("[YunNet.SwitchUpdate] Updating switch...")
         async with SQLPool.acquire() as conn:
             #panda step 1, grab all panda IP
@@ -92,7 +101,7 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                     "SELECT `value` FROM `variable` WHERE `name` = 'source_verify'"
                 )
                 source_verify = (await cur.fetchone())["value"]
-                await cur.execute(
+                await cur.execute(+ "/heartbeat"
                     "SELECT `value` FROM `variable` WHERE `name` = 'source_verify_changed'"
                 )
                 source_verify_changed = (await cur.fetchone())["value"]
@@ -108,7 +117,7 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                     else:
                         entry["lock"] = True
                     entry.pop("lock_id")
-                # grab switches
+                # grab switches+ "/heartbeat"
                 switch_query = "SELECT `switch_id`, `upper_id`, `upper_port`, `upper_port_type`, `account`, `password`, `vlan`, `machine_type`, `port_description`, `port_type` FROM `switch`"
                 await cur.execute(switch_query)
                 switch = await cur.fetchall()
@@ -130,7 +139,7 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                     "switch": switch,
                 }
                 async with aiohttpSession.session.post(
-                    api_endpoint, json=payload
+                    api_endpoint+ "/update", json=payload
                 ) as resp:
                     resp: ClientResponse = resp
                     if resp.status == 200 or resp.status == 202:
