@@ -69,6 +69,10 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                 )
                 mac_verify = (await cur.fetchone())["value"]
                 await cur.execute(
+                    "SELECT `value` FROM `variable` WHERE `name` = 'mac_verify'"
+                )
+                mac_verify = (await cur.fetchone())["value"]
+                await cur.execute(
                     "SELECT `value` FROM `variable` WHERE `name` = 'mac_verify_changed'"
                 )
                 mac_verify_changed = (await cur.fetchone())["value"]
@@ -81,11 +85,17 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                 )
                 source_verify_changed = (await cur.fetchone())["value"]
                 # grap IP
-                ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`  FROM `iptable` WHERE `is_updated` = 0"
+                ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`,`lock_id`,`mac`  FROM `iptable` WHERE `is_updated` = 0"
                 if mac_verify_changed or source_verify_changed:
-                    ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`  FROM `iptable`"
+                    ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`,`lock_id`,`mac`  FROM `iptable`"
                 await cur.execute(ip_query)
                 ip = await cur.fetchall()
+                for entry in ip:
+                    if entry["lock_id"] is None:
+                        entry["lock"] = False
+                    else:
+                        entry["lock"] = True
+                    entry.pop("lock_id")
                 # grab switches
                 switch_query = "SELECT `switch_id`, `upper_id`, `upper_port`, `upper_port_type`, `account`, `password`, `vlan`, `machine_type`, `port_description`, `port_type` FROM `switch`"
                 await cur.execute(switch_query)
