@@ -6,6 +6,7 @@ from sanic_openapi import doc, api
 from sanic_openapi.doc import JsonBody
 
 from Base import jwt_payload
+from Query.group import Group
 from Query.user import User
 from Query.permission import Permission
 from hashlib import sha256
@@ -69,9 +70,13 @@ async def bp_user_login(request):
                 return messages.RECAPTCHA_FAILED
 
     # check login permission
+    # TODO(biboy1999):now use group to check user login permission, will be remove after permission rework
     allowed = await Permission.check_permission(username, "index.login.login")
-
     if not allowed:
+        return messages.NO_PERMISSION
+
+    group_list = await Group.get_user_group(username)
+    if any(group["gid"] == 2 for group in group_list):
         return messages.NO_PERMISSION
 
     encode_password = (password + config.PASSWORD_SALT).encode("UTF-8")
