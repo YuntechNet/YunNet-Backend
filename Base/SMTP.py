@@ -15,7 +15,7 @@ class SMTP:
     async def init(client_parameters, login_parameters):
         SMTP.client_parameters = client_parameters
         SMTP.login_parameters = login_parameters
-        SMTP.sender = login_parameters["username"]
+        SMTP.sender = "網管小組 <{0}>".format(login_parameters["username"])
         SMTP.initialized = True
     
     @staticmethod
