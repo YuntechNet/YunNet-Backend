@@ -34,13 +34,13 @@ async def switch_update(api_endpoint: str):
             # calculate next run delay
             nextrun = datetime.now()
             nextrun = nextrun.replace(
-                hour=nextrun.hour + 1, minute=0, second=0, microsecond=0
+                hour=nextrun.hour + 1, minute=10, second=0, microsecond=0
             )
             delta: timedelta = nextrun - last_run
             if delta.total_seconds() < 60 * 10:  # 10 min
                 # add another hour
                 nextrun = nextrun.replace(
-                    hour=nextrun.hour + 1, minute=0, second=0, microsecond=0
+                    hour=nextrun.hour + 1, minute=10, second=0, microsecond=0
                 )
             await asyncio.sleep(delta.total_seconds())
 
@@ -60,14 +60,26 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                 panda_ip_list = await cur.fetchall()
             async with conn.cursor(DictCursor) as cur:
                 # panda step 2, set panda IP not update on 0AM and 7AM
-                if now.hour == 0 or now.hour == 7: 
+                panda_locked = False
+                await cur.execute(
+                    "SELECT `value` FROM `variable` WHERE `name` = 'panda_activated'"
+                )
+                panda_activated = (await cur.fetchone())["value"]
+                if (now.hour < 7 and not panda_activated) or (now.hour >= 7 and panda_activated): 
+                    #we should activate panda now
+                    if now.hour < 7:
+                        panda_locked = True
+                        await cur.execute(
+                                "UPDATE `variable` SET `value` = '1' WHERE `variable`.`name` = 'panda_activated'"
+                        )
+                    else:
+                        panda_locked = False
+                        await cur.execute(
+                                "UPDATE `variable` SET `value` = '0' WHERE `variable`.`name` = 'panda_activated'"
+                        )
                     panda_lock_query = "UPDATE `iptable` SET `is_updated` = '0' WHERE `ip_type_id` = '2'"
                     await cur.execute(panda_lock_query)
                 # grab variables
-                await cur.execute(
-                    "SELECT `value` FROM `variable` WHERE `name` = 'mac_verify'"
-                )
-                mac_verify = (await cur.fetchone())["value"]
                 await cur.execute(
                     "SELECT `value` FROM `variable` WHERE `name` = 'mac_verify'"
                 )
@@ -107,7 +119,7 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                 if now.hour < 7: 
                     for entry in ip:
                         if entry["ip"] in panda_ip_list:
-                            entry["lock"] = True
+                            entry["lock"] = panda_locked
                 # Send switch updating info to updater
                 payload = {
                     "mac_verify": mac_verify,
