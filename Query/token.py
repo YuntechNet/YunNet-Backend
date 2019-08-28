@@ -17,7 +17,7 @@ class Token:
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = "INSERT INTO `token` VALUES (%s, %s)"
+                sql = "INSERT INTO `token` VALUES (%s, %s, current_timestamp())"
                 para_input = (uid, token)
                 affect_row = await cur.execute(sql, para_input)
 
