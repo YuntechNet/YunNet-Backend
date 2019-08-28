@@ -51,10 +51,10 @@ async def bp_user_forgot_password(request):
     # TODO recover jwt token
     content = (
         "請點擊下方連結重置您的密碼：\n"
-        "https://yunnet.yuntech.com.tw/#/verify?={0}\n"
+        "https://yunnet.yuntech.com.tw/#/set_password/{0}\n"
         "\n"
         "Please click following link to reset your password:\n"
-        "https://yunnet.yuntech.com.tw/#/verify?={0}\n"
+        "https://yunnet.yuntech.com.tw/#/set_password/{0}\n"
         "\n"
     )
     # Token creation
@@ -119,7 +119,7 @@ async def bp_user_forgot_password_verify(request, token):
     password = request.json["password"]
     db_token = await Token.get_token(token)
 
-    if db_token in None:
+    if db_token is None:
         return messages.INVALID_TOKEN
 
     # token only live 1 hour
