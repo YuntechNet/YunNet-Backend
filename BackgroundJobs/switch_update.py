@@ -166,16 +166,15 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                     subject = "[YunNet.SwitchUpdate] "
                     if resp.status == 200:
                         subject += "Updated sucessfully."
-                        logger.info(subject)
                     elif resp.status == 202:
                         subject += "Updated with error."
-                        subject += "\n"
-                        subject += update_failed_ip
+
                     else:
                         subject += "Failed to update."
                     logger.info(subject)
+                    logger.error(repr(update_failed_ip))
                     if SMTP.initialized:
-                        message = MIMEText(update_failed_ip)
+                        message = MIMEText(repr(update_failed_ip))
                         message["From"] = SMTP.sender
                         message["To"] = SMTP.sender
                         message["Subject"] = subject
