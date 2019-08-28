@@ -24,7 +24,7 @@ LOGGING_SOCKET = {"host": "logger", "port": 9000}
 """
 MAC Updater endpoint URI
 """
-MAC_UPDATER_ENDPOINT = "http://updater/update"
+MAC_UPDATER_ENDPOINT = "http://updater:8000"
 
 """
 Password salt
@@ -54,10 +54,10 @@ SQL_CREDENTIALS is the parameters of Connection constructor in PyMySQL
 https://pymysql.readthedocs.io/en/latest/modules/connections.html#pymysql.connections.Connection
 """
 SQL_CREDENTIALS = {
-    "host": "127.0.0.1",
+    "host": "db",
     "port": 3306,
     "user": "root",
-    "password": "devonly",
+    "password": "toor",
     "db": "YunNet",
     "autocommit": True,
 }
@@ -65,7 +65,7 @@ SQL_CREDENTIALS = {
 """
 Setup MongoDB for logging
 """
-MONGODB_URI = "mongodb://127.0.0.1:27017"
+MONGODB_URI = "mongodb://mongo:27017"
 
 """
 Google reCaptcha configuration

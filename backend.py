@@ -16,7 +16,7 @@ import string
 import traceback
 from types import SimpleNamespace
 from sanic import Sanic
-from sanic.log import error_logger
+from sanic.log import logger
 from sanic.request import Request
 from sanic.response import json, text, redirect
 from sanic.exceptions import NotFound, MethodNotSupported
@@ -38,34 +38,37 @@ app.config.from_object(config)
 @app.listener("before_server_start")
 async def init(app, loop):
     if not config.CUSTOM_JWT_SECRET:
+        logger.info("Using random JWT secret.")
         app.config.JWT["jwtSecret"] = "".join(random.choice(string.digits+string.ascii_letters) for i in range(64))
     if config.LOGGING_SOCKET_ENABLED:
         sh = logging.handlers.SocketHandler(**config.LOGGING_SOCKET)
-        error_logger.addHandler(sh)
+        logger.addHandler(sh)
+        logger.info("Socket handler initialized.")
     try:
         # init aiohttp session
         app.aiohttp_session = aiohttp.ClientSession(loop=loop)
         await aiohttpSession.init({"limit": 200})
         # init SMTP client
         if config.DEBUG_ENABLE_SMTP or (not config.DEBUG):
-            print("Initializing SMTP...")
+            logger.info("Initializing SMTP...")
             await SMTP.init(config.SMTP_CLIENT_PARAMETERS, config.SMTP_CREDENTIALS)
         # init mongo log
         if config.DEBUG_ENABLE_MONGO or (not config.DEBUG):
-            print("Initializing MongoDB...")
+            logger.info("Initializing MongoDB...")
             app.mongo = SimpleNamespace()
             app.mongo.motor_client = AsyncIOMotorClient(config.MONGODB_URI)
             app.mongo.log_db = app.mongo.motor_client["yunnet"]
             app.mongo.log_collection = app.mongo.log_db["log"]
         # init aiomysql pool
         if config.DEBUG_ENABLE_SQL or (not config.DEBUG):
-            print("Initializing aiomysql...")
+            logger.info("Initializing aiomysql...")
             await SQLPool.init_pool(**config.SQL_CREDENTIALS)
             SQLPool.debug = config.DEBUG_PRINT_SQL_ONLY
             # MAC updating task
+            logger.info("Initializing Switch Updater")
             loop.create_task(switch_update(config.MAC_UPDATER_ENDPOINT))
     except Exception as ex:
-        error_logger.critical(traceback.format_exc())
+        logger.critical(traceback.format_exc())
         raise ex
 
 
@@ -129,7 +132,7 @@ async def app_method_not_supported(request, ex):
 @app.exception(Exception)
 async def app_other_error(request, ex):
     traceback.print_exc()
-    error_logger.critical(traceback.format_exc())
+    logger.critical(traceback.format_exc())
     if SMTP.initialized:
         message = MIMEText(traceback.format_exc())
         message["From"] = config.SMTP_CREDENTIALS["username"]
