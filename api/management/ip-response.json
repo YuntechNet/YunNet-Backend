@@ -1,0 +1,29 @@
+[
+    {
+        "ip": "140.125.207.1",
+        "mac": "45-1E-17-CC-C3-F4",
+        "port": 1,
+        "port_type": 0,
+        "switch": 7,
+        "mode": 2,
+        "status": 1
+    },
+    {
+        "ip": "140.125.207.2",
+        "mac": "0A-AF-AA-47-42-B8",
+        "port": 1,
+        "port_type": 0,
+        "switch": 7,
+        "mode": 2,
+        "status": 1
+    },
+    {
+        "ip": "140.125.207.1",
+        "mac": "E6-C1-52-CC-7B-CF",
+        "port": 1,
+        "port_type": 0,
+        "switch": 7,
+        "mode": 2,
+        "status": 1
+    }
+]

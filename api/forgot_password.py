@@ -69,7 +69,7 @@ async def bp_user_forgot_password(request):
         return messages.INTERNAL_SERVER_ERROR
 
     # Send mail
-    mail = MIMEText(content.format(recover_code))
+    mail = MIMEText(content.format(recover_code), "plain", "utf-8")
     mail["From"] = SMTP.sender
     mail["To"] = username + "@yuntech.edu.tw"
     mail["Subject"] = "YunNet 密碼重置"

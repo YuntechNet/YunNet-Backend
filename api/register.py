@@ -96,7 +96,7 @@ async def bp_register(request):
         activation_code = username + "_" + hexdigest
 
         # Send mail
-        mail = MIMEText(content.format(activation_code))
+        mail = MIMEText(content.format(activation_code), "plain", "utf-8")
         mail["From"] = SMTP.sender
         mail["To"] = username + "@yuntech.edu.tw"
         mail["Subject"] = "YunNet 驗證帳號"
