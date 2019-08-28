@@ -6,4 +6,4 @@ COPY . /backend
 #RUN tar -xzf /tmp/yunnet-backend-dev.tar.gz -C /backend --strip-components=1 && ls /backend
 RUN pip install pipenv && \
 pipenv --python 3.7 sync --dev
-CMD pipenv run gunicorn -w 4 -b 0000:8000 -k sanic.worker.GunicornWorker backend:app
+CMD pipenv run gunicorn -w 1 -b 0000:8000 -k sanic.worker.GunicornWorker backend:app
