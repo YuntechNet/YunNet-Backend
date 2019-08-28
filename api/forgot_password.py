@@ -114,7 +114,7 @@ class forgot_password_verify_doc(api.API):
 @forgot_password_verify_doc
 @bp_forgot_passowrd.route("/forgot-password/<token>", methods=["POST"])
 async def bp_user_forgot_password_verify(request, token):
-    # TODO verify token and remove from db
+    config = request.app.config
     username = token.split("_")[0]
     password = request.json["password"]
     db_token = await Token.get_token(token)
@@ -129,7 +129,9 @@ async def bp_user_forgot_password_verify(request, token):
         return messages.TOKEN_EXPIRED
 
     # Set user password
-    op_success = await User.set_password(username, password)
+    encode_password = (password + config.PASSWORD_SALT).encode("UTF-8")
+    hashed_password = sha256(encode_password).hexdigest()
+    op_success = await User.set_password(username, hashed_password)
     if not op_success:
         return messages.INTERNAL_SERVER_ERROR
 
