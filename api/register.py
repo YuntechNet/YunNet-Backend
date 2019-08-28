@@ -78,10 +78,10 @@ async def bp_register(request):
         # Activation mail content
         content = (
             "請點擊下方連結驗證您的帳號：\n"
-            "https://yunnet.yuntech.com.tw/#/verify?={0}\n"
+            "https://yunnet.yuntech.com.tw/#/register_verify/{0}\n"
             "\n"
             "Please click following link to activate your account:\n"
-            "https://yunnet.yuntech.com.tw/#/verify?={0}\n"
+            "https://yunnet.yuntech.com.tw/#/register_verify/{0}\n"
             "\n"
             "\n"
             "如須設定網路教學，請點擊下方連結（中文版）：\n"

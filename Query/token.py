@@ -21,7 +21,7 @@ class Token:
                     "INSERT INTO `token` VALUES (%s, %s, current_timestamp()) "
                     "ON DUPLICATE KEY UPDATE `token` = %s , `timestamp` = current_timestamp()"
                 )
-                para_input = (uid, token, Token)
+                para_input = (uid, token, token)
                 affect_row = await cur.execute(sql, para_input)
 
                 return affect_row
