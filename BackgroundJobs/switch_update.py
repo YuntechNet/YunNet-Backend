@@ -76,7 +76,7 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                 )
                 panda_activated = (await cur.fetchone())["value"]
                 if (now.hour < 7 and not panda_activated) or (now.hour >= 7 and panda_activated): 
-                    #we should activate panda now
+                    # we should activate panda now
                     if now.hour < 7:
                         panda_locked = True
                         await cur.execute(
@@ -110,7 +110,7 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                 )
                 source_verify_changed = (await cur.fetchone())["value"]
                 source_verify_changed = bool(int(source_verify_changed))
-                # grap IP
+                # grab IP
                 ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`,`lock_id`,`mac`  FROM `iptable` WHERE `is_updated` = 0 AND `ip_type_id` != 0"
                 if mac_verify_changed or source_verify_changed:
                     ip_query = "SELECT `ip`,`switch_id`,`port`,`port_type`,`lock_id`,`mac`  FROM `iptable` WHERE `ip_type_id` != 0"
@@ -144,7 +144,7 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                     "switch": switch,
                 }
                 async with aiohttpSession.session.post(
-                    api_endpoint+ "/update", json=payload
+                    api_endpoint+ "/update", json=payload, timeout=None
                 ) as resp:
                     resp: ClientResponse = resp
                     logger.info(await resp.json())
