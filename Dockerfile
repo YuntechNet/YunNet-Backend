@@ -8,4 +8,4 @@ COPY Pipfile.lock /backend
 RUN pip install pipenv && \
 pipenv --python 3.7 sync --dev
 COPY . /backend
-CMD pipenv run gunicorn -w 1 -b 0000:8000 -k sanic.worker.GunicornWorker backend:app
+CMD pipenv run python -m sanic backend.app

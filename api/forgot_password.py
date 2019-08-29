@@ -6,8 +6,7 @@ from sanic import Blueprint
 from sanic_openapi import doc, api
 from email.mime.text import MIMEText
 
-from Base import messages, SMTP
-from Base import messages
+from Base import messages, SMTP, big5_encode
 from Query import User
 from Query.token import Token
 
@@ -70,10 +69,10 @@ async def bp_user_forgot_password(request):
         return messages.INTERNAL_SERVER_ERROR
 
     # Send mail
-    mail = MIMEText(content.format(recover_code), "plain", "utf-8")
+    mail = MIMEText(big5_encode(content.format(recover_code)))
     mail["From"] = SMTP.sender
     mail["To"] = username + "@yuntech.edu.tw"
-    mail["Subject"] = "YunNet 密碼重置"
+    mail["Subject"] = big5_encode("YunNet 密碼重置")
     await SMTP.send_message(mail)
 
     resp = messages.OPERATION_SUCCESS

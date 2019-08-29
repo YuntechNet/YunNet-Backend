@@ -5,7 +5,7 @@ import json
 from email.mime.text import MIMEText
 from aiomysql.cursors import DictCursor
 from aiohttp.client import ClientResponse
-
+from Base import big5_encode
 from Base import SQLPool, aiohttpSession, SMTP
 
 class switch_update_status:
@@ -151,46 +151,52 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                     "ip": ip,                        
                     "switch": switch,
                 }
-                async with aiohttpSession.session.post(
-                    api_endpoint + "/update", json=payload, timeout=None
-                ) as resp:
-                    resp: ClientResponse = resp
-                    logger.info(await resp.json())
-                    if resp.status == 200 or resp.status == 202:
-                        update_query = (
-                            "UPDATE `iptable` SET `is_updated` = '1' WHERE `is_updated` = '0'"
-                        )
-                        await cur.execute(update_query)
+                http_status_code = 0
+                update_failed_ip = []
+                text = None
+                try:
+                    async with aiohttpSession.session.post(
+                        api_endpoint + "/update", json=payload, timeout=None
+                    ) as resp:
+                        resp: ClientResponse = resp
+                        http_status_code = resp.status
+                        text = await resp.text()
+                        json_body = await resp.json()
+                        logger.info("[YunNet.SwitchUpdate] Got response {0}: {1}".format(resp.status, text))
+                        if resp.status == 200 or resp.status == 202:
+                            update_query = (
+                                "UPDATE `iptable` SET `is_updated` = '1' WHERE `is_updated` = '0'"
+                            )
+                            await cur.execute(update_query)
 
-                    if resp.status == 200:
-                        await cur.execute(
-                            "UPDATE `variable` SET `value` = '0' WHERE `variable`.`name` = 'mac_verify_changed'"
-                        )
-                        await cur.execute(
-                            "UPDATE `variable` SET `value` = '0' WHERE `variable`.`name` = 'source_verify_changed'"
-                        )
-                    update_failed_ip = []
-                    if resp.status == 202:
-                        update_failed_ip = resp.json()["update_failed_ip"]
-                        update_failed_query = (
-                            "UPDATE `iptable` SET `is_updated` = '0' WHERE `ip` = %s"
-                        )
-                        await cur.executemany(update_failed_query, update_failed_ip)
-
-                    #send report
-                    subject = "[YunNet.SwitchUpdate] "
-                    if resp.status == 200:
-                        subject += "Updated sucessfully."
-                    elif resp.status == 202:
-                        subject += "Updated with error."
-
-                    else:
-                        subject += "Failed to update."
-                    logger.info(subject)
-                    logger.error(repr(update_failed_ip))
-                    if SMTP.initialized:
-                        message = MIMEText(repr(update_failed_ip))
-                        message["From"] = SMTP.sender
-                        message["To"] = SMTP.sender
-                        message["Subject"] = subject
-                        await SMTP.send_message(message)
+                        if resp.status == 200:
+                            await cur.execute(
+                                "UPDATE `variable` SET `value` = '0' WHERE `variable`.`name` = 'mac_verify_changed'"
+                            )
+                            await cur.execute(
+                                "UPDATE `variable` SET `value` = '0' WHERE `variable`.`name` = 'source_verify_changed'"
+                            )
+                        if resp.status == 202:
+                            update_failed_ip = json_body["update_failed_ip"]
+                            update_failed_query = (
+                                "UPDATE `iptable` SET `is_updated` = '0' WHERE `ip` = %s"
+                            )
+                            await cur.executemany(update_failed_query, update_failed_ip)
+                except e:
+                    import traceback
+                    text = traceback.format_exc()
+                #send report
+                subject = "[YunNet.SwitchUpdate] "
+                if http_status_code == 200:
+                    subject += "Updated sucessfully."
+                elif http_status_code == 202:
+                    subject += "Updated with error."
+                else:
+                    subject += "Failed to update."
+                logger.info(text)
+                if SMTP.initialized:
+                    message = MIMEText(big5_encode(text))
+                    message["From"] = SMTP.sender
+                    message["To"] = SMTP.sender
+                    message["Subject"] = big5_encode(subject)
+                    await SMTP.send_message(message)

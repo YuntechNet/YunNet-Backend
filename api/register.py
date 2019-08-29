@@ -5,7 +5,7 @@ from email.mime.text import MIMEText
 from hashlib import sha256
 from time import time
 
-from Base import messages, SMTP
+from Base import messages, SMTP, big5_encode
 from Query.user import User
 from Query.bed import Bed
 from Query.group import Group
@@ -96,10 +96,10 @@ async def bp_register(request):
         activation_code = username + "_" + hexdigest
 
         # Send mail
-        mail = MIMEText(content.format(activation_code), "plain", "utf-8")
+        mail = MIMEText(big5_encode(content.format(activation_code)))
         mail["From"] = SMTP.sender
         mail["To"] = username + "@yuntech.edu.tw"
-        mail["Subject"] = "YunNet 驗證帳號"
+        mail["Subject"] = big5_encode("YunNet 驗證帳號")
         await SMTP.send_message(mail)
         resp = messages.REGISTER_SUCCESS
 
