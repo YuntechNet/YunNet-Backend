@@ -193,7 +193,6 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                     subject += "Updated with error."
                 else:
                     subject += "Failed to update."
-                logger.info(text)
                 if SMTP.initialized:
                     message = MIMEText(big5_encode(text))
                     message["From"] = SMTP.sender
