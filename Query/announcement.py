@@ -1,55 +1,65 @@
 import datetime
 
-from aiomysql import MySQLError
+from aiomysql import MySQLError, DictCursor
 from sanic.log import logger
 
 from Base import SQLPool
 
 
 class Announcement:
-    pass
-    # async def get_announcement(offset=0):
-    #     """get announcement list
-    #
-    #     get announcement limit to 10 data, use offset(page) to change page
-    #
-    #     Args:
-    #         offset: start from
-    #
-    #     Returns:list with dict
-    #     [
-    #         {
-    #             'title': str,
-    #             'post_time': int,
-    #             'last_edit_time': int,
-    #             'content': str,
-    #             'delete_count': int,
-    #             'poster_id': str,
-    #             'top': int
-    #         },
-    #     ]
-    #     """
-    #
-    #     async with SQLPool.acquire() as conn:
-    #         async with conn.cursor() as cur:
-    #             sql = "SELECT * FROM `announcement`"
-    #             para_input = offset * 5
-    #             await cur.execute(sql, para_input)
-    #
-    #             data = await cur.fetchall()
-    #             key = [
-    #                 "title",
-    #                 "post_time",
-    #                 "last_edit_time",
-    #                 "content",
-    #                 "delete_count",
-    #                 "poster_id",
-    #                 "top",
-    #             ]
-    #
-    #             dicts = [dict(zip(key, d)) for d in data]
-    #
-    #     return dicts
+
+    @staticmethod
+    async def get_announcement():
+        """get announcement list
+
+        get announcement list only id and title
+
+        Returns:list with dict
+        [
+            {
+                'announcement_id': int,
+                'title': str,
+            },
+        ]
+        """
+
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                sql = "SELECT `announcement_id`,`title` FROM `announcement`"
+                await cur.execute(sql)
+                data = cur.fetchall()
+                await conn.commit()
+
+        return data
+
+    @staticmethod
+    async def get_announcement_post(id):
+        """get announcement post
+
+        get announcement post using id
+
+        Returns:list with dict
+        [
+            {
+                'announcement_id: int,
+                'title': int,
+                'content': str,
+            },
+        ]
+        """
+
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                sql = (
+                    "SELECT `announcement_id`,`title`,`content` "
+                    "FROM `announcement` "
+                    "WHERE announcement_id = %s"
+                )
+                await cur.execute(sql, id)
+                await conn.commit()
+                data = cur.fetchone()
+
+        return data
 
     # TODO(biboy1999):management logic
     # async def delete_announcement(self, post_id):
