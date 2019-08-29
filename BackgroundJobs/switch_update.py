@@ -91,6 +91,14 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                     await cur.execute(panda_lock_query)
                 # grab variables
                 await cur.execute(
+                    "SELECT `value` FROM `variable` WHERE `name` = 'switch_update_enabled'"
+                )
+                switch_update_enabled = (await cur.fetchone())["value"]
+                switch_update_enabled = bool(int(switch_update_enabled))
+                if not switch_update_enabled:
+                    logger.info("[YunNet.SwitchUpdate] Switch update is disabled!")
+                    return
+                await cur.execute(
                     "SELECT `value` FROM `variable` WHERE `name` = 'mac_verify'"
                 )
                 mac_verify = (await cur.fetchone())["value"]
