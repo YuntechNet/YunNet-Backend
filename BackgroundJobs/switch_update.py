@@ -152,7 +152,7 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                     "switch": switch,
                 }
                 async with aiohttpSession.session.post(
-                    api_endpoint+ "/update", json=payload, timeout=None
+                    api_endpoint + "/update", json=payload, timeout=None
                 ) as resp:
                     resp: ClientResponse = resp
                     logger.info(await resp.json())
@@ -161,13 +161,14 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                             "UPDATE `iptable` SET `is_updated` = '1' WHERE `is_updated` = '0'"
                         )
                         await cur.execute(update_query)
+
+                    if resp.status == 200:
                         await cur.execute(
                             "UPDATE `variable` SET `value` = '0' WHERE `variable`.`name` = 'mac_verify_changed'"
                         )
                         await cur.execute(
                             "UPDATE `variable` SET `value` = '0' WHERE `variable`.`name` = 'source_verify_changed'"
                         )
-
                     update_failed_ip = []
                     if resp.status == 202:
                         update_failed_ip = resp.json()["update_failed_ip"]
@@ -192,4 +193,4 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                         message["From"] = SMTP.sender
                         message["To"] = SMTP.sender
                         message["Subject"] = subject
-                        SMTP.send_message(message)
+                        await SMTP.send_message(message)
