@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 
-def jwt_payload(username: str):
+def jwt_payload(username: str, permission_list: list):
     """
     Return JWT payload base
 
@@ -14,5 +14,6 @@ def jwt_payload(username: str):
         "iat": datetime.utcnow(),
         "exp": datetime.utcnow() + timedelta(hours=1),
         "username": username,
+        "permission": permission_list,
     }
     return payload

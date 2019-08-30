@@ -85,8 +85,11 @@ async def bp_user_login(request):
 
     if db_pw != hashed_password:
         return messages.LOGIN_FAILED
+    permission_list = list(await Permission.get_all_permission(username))
     token = jwt.encode(
-        jwt_payload(username), config.JWT["jwtSecret"], config.JWT["algorithm"]
+        jwt_payload(username, permission_list), 
+        config.JWT["jwtSecret"], 
+        config.JWT["algorithm"]
     ).decode("utf-8")
 
     resp = json({"username": username, "token": token}, 200)
