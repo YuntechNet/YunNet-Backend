@@ -3,6 +3,7 @@ from sanic import Blueprint
 from sanic_openapi import api, doc
 
 from Base import messages
+from Decorators import permission
 from Query.group import Group
 from Query.ip import Ip
 from Query.userinfo import Userinfo
@@ -66,6 +67,7 @@ class user_query_doc(api.API):
 
 @user_query_doc
 @bp_query.route("/<query>", methods=["GET"])
+@permission("system.dormitory.query.query")
 async def bp_user_query(request, query):
     # TODO(biboy1999): will refactor later
     resp = {"user": [], "ip": []}
@@ -78,7 +80,7 @@ async def bp_user_query(request, query):
         mode = "ip"
         user = await Userinfo.get_fullinfo(query, mode)
 
-        if user is  None:
+        if user is None:
             ip = await Ip.get_ip_by_id(query)
             resp["ip"] = ip
             return json(resp)
