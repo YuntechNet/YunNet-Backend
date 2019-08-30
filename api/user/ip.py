@@ -6,6 +6,7 @@ from Base import types
 from Base.types import IpTypes, IpStatus
 from Decorators import permission
 from Query.ip import Ip
+from Query import Lock
 
 bp_ip = Blueprint("ip")
 
@@ -17,10 +18,10 @@ class user_ip_get_own_ip_doc(api.API):
 
         class model:
             ip = doc.String("Ip")
-            mac = doc.String("Ip's mac address")
-            is_updated = doc.Integer("Is updated to switch")
-            description = doc.String("Ip's description")
-            lock_status = doc.String("Ip's lock status")
+            mac = doc.String("MAC address of an IP")
+            is_updated = doc.Integer("if MAC is updated to switch")
+            description = doc.String("IP description")
+            locked = doc.String("If a IP is locked")
 
         model = doc.List(model)
 
@@ -64,15 +65,18 @@ async def bp_ip_get_owned_ip(request, username):
         for key in remove_key_list:
             ip.pop(key)
 
-        status = ip.pop("lock_id")
-        if status is None:
-            ip["lock_status"] = "UNLOCKED"
+        lock_id = ip.pop("lock_id")
+        if lock_id is None:
+            ip["locked"] = False
         else:
-            ip["lock_status"] = "LOCKED"
+            ip["locked"] = True
+            lock = await Lock.get_lock_by_id(lock_id)
+            ip["lock_reason"] = lock["description"]
 
-        status = ip.pop("is_unlimited")
-        if status == 1:
-            ip["lock_status"] = "UNLIMITED"
+        if not bool(int(ip["is_unlimited"])):
+            ip.pop("is_unlimited")
+        else:
+            ip["is_unlimited"] = True
 
     response = json(ips)
     return response

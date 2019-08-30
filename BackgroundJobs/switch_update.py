@@ -7,6 +7,7 @@ from aiomysql.cursors import DictCursor
 from aiohttp.client import ClientResponse
 from Base import big5_encode
 from Base import SQLPool, aiohttpSession, SMTP
+from Query import remove_expired_lock
 
 class switch_update_status:
     lock = asyncio.Lock()
@@ -50,16 +51,8 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
         return
     now = datetime.now()
     async with switch_update_status.lock:
-        # check if service is alive
-        try:
-            pass # heartbeat is pretty unnecessary 
-            #await aiohttpSession.session.get(api_endpoint + "/heartbeat")
-            #await asyncio.sleep(60 * 10) # wait 10 monutes
-        except Exception as e:
-            logger.error("[YunNet.SwitchUpdate] Can't contact to switch!")
-            logger.exception(e)
-            return
-    
+        
+        await remove_expired_lock() # Remove expired lock status
         logger.info("[YunNet.SwitchUpdate] Updating switch...")
         async with SQLPool.acquire() as conn:
             #panda step 1, grab all panda IP
@@ -182,7 +175,7 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                                 "UPDATE `iptable` SET `is_updated` = '0' WHERE `ip` = %s"
                             )
                             await cur.executemany(update_failed_query, update_failed_ip)
-                except e:
+                except:
                     import traceback
                     text = traceback.format_exc()
                 #send report
@@ -192,7 +185,7 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                     subject += "Updated sucessfully."
                 elif http_status_code == 202:
                     subject += "Updated with error."
-                    message = MIMEText(payload, _charset="big5")
+                    message = MIMEText(text, _charset="big5")
                 else:
                     subject += "Failed to update."
                     message = MIMEText(payload, _charset="big5")
