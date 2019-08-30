@@ -53,6 +53,36 @@ class Lock:
         return data
 
     @staticmethod
+    async def get_lock_by_id(id: int) -> dict:
+        """Get user lock status by lock ID
+
+        Args:
+            id: Lock ID
+
+        Returns:
+
+            Dict is formatted as this:
+            {
+                lock_id: int,
+                lock_type_id: int,
+                ip: str,
+                lock_date: datetime
+                unlock_date: datetime
+                description: str,
+                lock_by_user_id: int
+            }
+
+        """
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                sql = "SELECT * FROM `lock` WHERE `lock_id` = %s"
+                await cur.execute(sql, id)
+                data = await cur.fetchone()
+                return data
+
+
+
+    @staticmethod
     async def set_lock(
         ip: str,
         lock_type: LockTypes,
@@ -82,11 +112,20 @@ class Lock:
                 para_input = (
                     lock_type,
                     ip,
-                    lock_type,
+                    lock_date,
                     unlock_date,
                     description,
                     lock_by_user_id,
                 )
                 await cur.execute(sql, para_input)
+                lock_id_query = "SELECT `lock_id` FROM `lock` WHERE `ip` = %s ORDER BY `lock_date` DESC"
+                await cur.execute(lock_id_query, ip)
+                lock_id = await cur.fetchone()
+                ip_set_lock_id_query = "UPDATE `iptable` SET `lock_id` = %s WHERE `ip` = %s"
+                set_lock_tuple_input = (
+                    lock_id,
+                    ip
+                )
+                await cur.execute(ip_set_lock_id_query, set_lock_tuple_input)
                 await conn.commit()
                 return True
