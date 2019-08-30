@@ -187,15 +187,17 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                     text = traceback.format_exc()
                 #send report
                 subject = "[YunNet.SwitchUpdate] "
+                message = MIMEText(text, _charset="big5")
                 if http_status_code == 200:
                     subject += "Updated sucessfully."
                 elif http_status_code == 202:
                     subject += "Updated with error."
+                    message = MIMEText(payload, _charset="big5")
                 else:
                     subject += "Failed to update."
+                    message = MIMEText(payload, _charset="big5")
                 if SMTP.initialized:
-                    message = MIMEText(big5_encode(text))
                     message["From"] = SMTP.sender
                     message["To"] = SMTP.sender
-                    message["Subject"] = big5_encode(subject)
+                    message["Subject"] = subject
                     await SMTP.send_message(message)
