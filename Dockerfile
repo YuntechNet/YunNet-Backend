@@ -3,6 +3,7 @@ WORKDIR /backend
 EXPOSE 8000
 #ADD https://gitlab.com/Zeinok/yunnet-backend/-/archive/dev/yunnet-backend-dev.tar.gz /tmp
 #RUN tar -xzf /tmp/yunnet-backend-dev.tar.gz -C /backend --strip-components=1 && ls /backend
+ENV TZ=Asia/Taipei
 COPY Pipfile /backend
 COPY Pipfile.lock /backend
 RUN pip install pipenv && \
