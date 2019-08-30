@@ -51,7 +51,7 @@ class user_info_doc(api.API):
 @bp_user.route("/", methods=["GET"])
 @permission("index.userinfo.view")
 async def bp_user_info(request, username):
-    username = request.args["token_username"]
+    username = request["username"]
 
     user = await Userinfo.get_userinfo(username)
     group = await Group.get_user_group(username)
