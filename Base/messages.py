@@ -27,6 +27,7 @@ INVALID_MAC = json(msg("INVALID_MAC"), status=400)
 
 ACCEPTED = json(msg("ACCEPTED"), status=202)
 OPERATION_SUCCESS = json(msg("OPERATION_SUCCESS"), status=200)
+BAD_REQUEST = json(msg("BAD_REQUEST"), status=400)
 INVALID_SESSION = json(msg("INVALID_SESSION"), status=401)
 SESSION_EXPIRED = json(msg("SESSION_EXPIRED"), status=401)
 NO_PERMISSION = json(msg("NO_PERMISSION"), status=401)
