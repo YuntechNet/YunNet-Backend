@@ -81,11 +81,27 @@ async def finish(app, loop):
         await SQLPool.pool.wait_closed()
 
 
+@app.middleware("request")
+async def request_middleware(request):
+    if "Authorization" in request.headers:
+            auth = request.headers["Authorization"].split()
+            if auth[0] == "Bearer":
+                try:
+                    jwt_payload = jwt.decode(auth[1], config.JWT["jwtSecret"])
+                    request["username"] = jwt_payload["username"]
+                    request["permission"]: list = jwt_payload["permission"]
+                except jwt.ExpiredSignatureError:
+                    return messages.SESSION_EXPIRED
+                except:
+                    return messages.INVALID_SESSION
+
+
 @app.middleware("response")
 async def response_middleware(request, response):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     real_ip: str = None
     username: str = None
+    Request.ip
     if "X-Forwarded-For" in request.headers:
         real_ip = request.headers["X-Forwarded-For"]
     else:
@@ -130,9 +146,8 @@ async def app_method_not_supported(request, ex):
 
 
 @app.exception(Exception)
-async def app_other_error(request, ex):
-    traceback.print_exc()
-    logger.critical(traceback.format_exc())
+async def app_other_error(request: Request, ex):
+    logger.critical("Exception on {0}:{1}".format(request.path,traceback.format_exc()))
     if SMTP.initialized:
         message = MIMEText(traceback.format_exc())
         message["From"] = config.SMTP_CREDENTIALS["username"]
