@@ -67,7 +67,7 @@ class user_query_doc(api.API):
 
 @user_query_doc
 @bp_query.route("/<query>", methods=["GET"])
-# @permission("system.dormitory.query.query")
+@permission("system.dormitory.query.query")
 async def bp_user_query(request, query):
     # TODO(biboy1999): will refactor later
 
