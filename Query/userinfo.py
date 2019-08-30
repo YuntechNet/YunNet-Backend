@@ -40,6 +40,41 @@ class Userinfo:
                 logger.warning(data)
         return data
 
+    @staticmethod
+    async def query_userinfo(query):
+        """Get full userinfo by username, bed, ip
+
+        Args:
+            username: username
+
+        Returns:
+            dict
+
+            dict is formatted as this:
+            (
+                uid: int,
+                username: string,
+                password_hash: string,
+                nick: string,
+                bed: string,
+                department: string,
+                back_mail: string
+            )
+
+        """
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                sql: str = "SELECT * FROM `user` WHERE `username` = %s"
+                para_input = username
+                await cur.execute(sql, para_input)
+                data = await cur.fetchone()
+
+                if data is None:
+                    return None
+
+                logger.warning(data)
+        return data
+
     # TODO(biboy1999): WIP management logic
     # def set_userinfo(self, userinfo: tuple) -> bool:
     #     """Set userinfo with tuple

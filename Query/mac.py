@@ -47,7 +47,9 @@ class MAC:
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = "UPDATE `iptable` SET `mac` = %s WHERE `ip` = %s "
+                sql = (
+                    "UPDATE `iptable` SET `mac` = %s,`is_updated` = 0 WHERE `ip` = %s "
+                )
                 para_input = (mac, ip)
                 await cur.execute(sql, para_input)
                 await conn.commit()

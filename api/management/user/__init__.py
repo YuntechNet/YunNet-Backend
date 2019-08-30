@@ -1,7 +1,7 @@
 from sanic import Blueprint
 
-from .info import info
+from .query import bp_query
 from .manage import manage
 from .netflow import netflow
 
-user = Blueprint.group(info, manage, netflow, url_prefix="/user")
+bp_user = Blueprint.group(bp_query, manage, netflow, url_prefix="/user")
