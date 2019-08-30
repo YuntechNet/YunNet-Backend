@@ -51,10 +51,10 @@ async def bp_user_forgot_password(request):
     # TODO recover jwt token
     content = (
         "請點擊下方連結重置您的密碼：\n"
-        "https://yunnet.yuntech.com.tw/#/set_password/{0}\n"
+        "https://yunnet.yuntech.edu.tw/#/set_password/{0}\n"
         "\n"
         "Please click following link to reset your password:\n"
-        "https://yunnet.yuntech.com.tw/#/set_password/{0}\n"
+        "https://yunnet.yuntech.edu.tw/#/set_password/{0}\n"
         "\n"
     )
     # Token creation
