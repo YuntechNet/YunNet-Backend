@@ -77,7 +77,7 @@ async def bp_user_login(request):
 
     group_list = await Group.get_user_group(username)
     if any(group["gid"] == 2 for group in group_list):
-        return messages.NO_PERMISSION
+        return messages.NOT_REGISTERED
 
     encode_password = (password + config.PASSWORD_SALT).encode("UTF-8")
     hashed_password = sha256(encode_password).hexdigest()

@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 
 from Base import messages, SMTP, big5_encode
 from Query import User
+from Query.group import Group
 from Query.token import Token
 
 bp_forgot_passowrd = Blueprint("forgot-password")
@@ -61,6 +62,10 @@ async def bp_user_forgot_password(request):
     hexdigest = username + repr(time())
     hexdigest = sha256(hexdigest.encode()).hexdigest()
     recover_code = username + "_" + hexdigest
+
+    group_list = await Group.get_user_group(username)
+    if any(group["gid"] == 2 for group in group_list):
+        return messages.NOT_REGISTERED
 
     # Insert to database
     uid = await User.get_user_id(username)
