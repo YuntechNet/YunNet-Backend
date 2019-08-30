@@ -67,9 +67,27 @@ class user_query_doc(api.API):
 
 @user_query_doc
 @bp_query.route("/<query>", methods=["GET"])
-@permission("system.dormitory.query.query")
+# @permission("system.dormitory.query.query")
 async def bp_user_query(request, query):
     # TODO(biboy1999): will refactor later
+
+    def ip_list_wraper(ip_list):
+        for ip in ip_list:
+            ip.pop("uid")
+            ip.pop("gid")
+            ip.pop("lock_id")
+
+            status = ip.get("lock_id", None)
+            if status is None:
+                ip["lock_status"] = "UNLOCKED"
+            else:
+                ip["lock_status"] = "LOCKED"
+
+            status = ip.get("is_unlimited", None)
+            if status == 1:
+                ip["lock_status"] = "UNLIMITED"
+        return ip_list
+
     resp = {"user": [], "ip": []}
     group_list = []
 
@@ -89,14 +107,12 @@ async def bp_user_query(request, query):
 
         ip_list = await Ip.get_user_own_ip(user["username"])
         if ip_list is not None:
-            for ip in ip_list:
-                ip.pop("uid")
-                ip.pop("gid")
-                ip.pop("lock_id")
+            ip_list = ip_list_wraper(ip_list)
 
         group = await Group.get_user_group(user["username"])
         for g in group:
             group_list.append(g["description"])
+
         user["group"] = group_list
         resp["user"] = user
         resp["ip"] = ip_list
@@ -113,10 +129,7 @@ async def bp_user_query(request, query):
 
         ip_list = await Ip.get_user_own_ip(user["username"])
         if ip_list is not None:
-            for ip in ip_list:
-                ip.pop("uid")
-                ip.pop("gid")
-                ip.pop("lock_id")
+            ip_list = ip_list_wraper(ip_list)
 
         group = await Group.get_user_group(user["username"])
         for g in group:
@@ -129,14 +142,12 @@ async def bp_user_query(request, query):
         mode = "username"
         user = await Userinfo.get_fullinfo(query, mode)
         if user is not None:
+
             user.pop("password_hash")
 
             ip_list = await Ip.get_user_own_ip(user["username"])
             if ip_list is not None:
-                for ip in ip_list:
-                    ip.pop("uid")
-                    ip.pop("gid")
-                    ip.pop("lock_id")
+                ip_list = ip_list_wraper(ip_list)
 
             group = await Group.get_user_group(user["username"])
             for g in group:
