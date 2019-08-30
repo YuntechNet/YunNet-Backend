@@ -1,3 +1,5 @@
+from email.charset import Charset
+
 from sanic.log import logger
 from sanic.response import json
 from sanic_openapi import doc, api
@@ -96,10 +98,10 @@ async def bp_register(request):
         activation_code = username + "_" + hexdigest
 
         # Send mail
-        mail = MIMEText(big5_encode(content.format(activation_code)))
+        mail = MIMEText(content.format(activation_code), _charset="big5")
         mail["From"] = SMTP.sender
         mail["To"] = username + "@yuntech.edu.tw"
-        mail["Subject"] = big5_encode("YunNet 驗證帳號")
+        mail["Subject"] = "YunNet Verify Email"
         await SMTP.send_message(mail)
         resp = messages.REGISTER_SUCCESS
 
