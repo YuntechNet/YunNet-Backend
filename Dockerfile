@@ -8,4 +8,4 @@ COPY Pipfile.lock /backend
 RUN pip install pipenv && \
 pipenv --python 3.7 sync --dev
 COPY . /backend
-CMD pipenv run python -m sanic backend.app
+CMD pipenv run python backend.py
