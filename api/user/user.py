@@ -51,33 +51,25 @@ class user_info_doc(api.API):
 @bp_user.route("/", methods=["GET"])
 @permission("index.userinfo.view")
 async def bp_user_info(request, username):
-    try:
-        username = request.args["token_username"]
+    username = request.args["token_username"]
 
-        user = await Userinfo.get_userinfo(username)
-        ip = await Ip.get_user_ip_mac(username)
-        group = await Group.get_user_group(username)
-        # bed = await Bed.get_user_bed_info(username)
+    user = await Userinfo.get_userinfo(username)
+    group = await Group.get_user_group(username)
+    # bed = await Bed.get_user_bed_info(username)
 
-        # bed_type = "一般房"
-        # if bed["ip_type"] == 1:
-        #     bed_type = "晨康房"
+    # bed_type = "一般房"
+    # if bed["ip_type"] == 1:
+    #     bed_type = "晨康房"
 
-        group_list = []
-        for g in group:
-            group_list.append(g["description"])
+    group_list = []
+    for g in group:
+        group_list.append(g["description"])
 
-        user_obj = {
-            "username": user["username"],
-            "department": user["department"],
-            "name": user["nick"],
-            "group": group_list,
-        }
-        response = json(user_obj)
-        return response
-    except (TypeError, KeyError):
-        logger.warning(request.url + " error occur")
-        logger.warning("user:" + str(user))
-        logger.warning("ip:" + str(ip))
-        logger.warning("group:" + str(group))
-        return messages.INTERNAL_SERVER_ERROR
+    user_obj = {
+        "username": user["username"],
+        "department": user["department"],
+        "name": user["nick"],
+        "group": group_list,
+    }
+    response = json(user_obj)
+    return response

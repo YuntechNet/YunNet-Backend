@@ -41,11 +41,12 @@ class Userinfo:
         return data
 
     @staticmethod
-    async def query_userinfo(query):
+    async def get_fullinfo(query, mode):
         """Get full userinfo by username, bed, ip
 
         Args:
-            username: username
+            query: username or bed or ip
+            mode: str, "username","bed","ip" to select query mode
 
         Returns:
             dict
@@ -54,25 +55,39 @@ class Userinfo:
             (
                 uid: int,
                 username: string,
-                password_hash: string,
                 nick: string,
-                bed: string,
                 department: string,
                 back_mail: string
+                note: string
             )
 
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
-                sql: str = "SELECT * FROM `user` WHERE `username` = %s"
-                para_input = username
+
+                if mode == "username":
+                    sql = "SELECT * FROM `user` WHERE `username` = %s"
+                elif mode == "ip":
+                    sql = (
+                        "SELECT u.* FROM `user` AS u "
+                        "INNER JOIN `iptable` AS i "
+                        "ON u.uid = i.uid WHERE `ip` = %s"
+                    )
+                elif mode == "bed":
+                    sql = (
+                        "SELECT u.* FROM `user` AS u "
+                        "INNER JOIN `iptable` AS i "
+                        "ON u.uid = i.uid WHERE `description` LIKE CONCAT('%%',%s)"
+                    )
+                else:
+                    return None
+                para_input = query
                 await cur.execute(sql, para_input)
                 data = await cur.fetchone()
 
                 if data is None:
                     return None
 
-                logger.warning(data)
         return data
 
     # TODO(biboy1999): WIP management logic

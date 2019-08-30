@@ -25,40 +25,79 @@ class Ip:
     #         dicts = [dict(zip(key, d)) for d in data]
     #
     #     return dicts
-
     @staticmethod
-    async def get_user_ip_mac(username):
+    async def get_ip_by_id(ip):
         """
 
         Args:
-            username:username
+            id:ip address
 
         Returns:dict
             {
-                "ip":str,
-                "mac":str
+                "ip": str,
+                "switch_id": int,
+                "ip_type_id": int,
+                "mac": str,
+                "port": int,
+                "port_type": str,
+                "is_updated": bool,
+                "uid": int,
+                "gid": int,
+                "description": str,
+                "lock_id": int,
             }
 
         """
         async with SQLPool.acquire() as conn:
-            async with conn.cursor() as cur:
-                sql = (
-                    "SELECT i.ip,i.mac "
-                    "FROM `user` AS u "
-                    "INNER JOIN `iptable` AS i ON i.uid = u.uid "
-                    "WHERE u.username = %s "
-                )
-                para_input = username
+            async with conn.cursor(DictCursor) as cur:
+                sql = "SELECT * " "FROM `iptable`" "WHERE `ip` = %s "
+                para_input = ip
                 await cur.execute(sql, para_input)
-                data = await cur.fetchone()
+                data = await cur.fetchall()
 
                 if data is None:
                     return None
 
-                key = ["ip", "mac"]
-                dicts = dict(zip(key, data))
+                return data
 
-        return dicts
+    @staticmethod
+    async def get_ip_by_bed(bed):
+        """
+
+        Args:
+            bed:username
+
+        Returns:dict
+            {
+                "ip": str,
+                "switch_id": int,
+                "ip_type_id": int,
+                "mac": str,
+                "port": int,
+                "port_type": str,
+                "is_updated": bool,
+                "uid": int,
+                "gid": int,
+                "description": str,
+                "lock_id": int,
+            }
+
+        """
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                sql = (
+                    "SELECT * "
+                    "FROM `iptable`"
+                    "WHERE `description` LIKE CONCAT('%%',%s) "
+                )
+                para_input = bed
+                await cur.execute(sql, para_input)
+                data = await cur.fetchall()
+
+                if data is None:
+                    return None
+
+                return data
 
     @staticmethod
     async def get_user_own_ip(username):
