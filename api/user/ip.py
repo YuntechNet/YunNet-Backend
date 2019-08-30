@@ -64,19 +64,14 @@ async def bp_ip_get_owned_ip(request, username):
     for ip in ips:
         for key in remove_key_list:
             ip.pop(key)
-
-        lock_id = ip.pop("lock_id")
-        if lock_id is None:
-            ip["locked"] = False
-        else:
-            ip["locked"] = True
-            lock = await Lock.get_lock_by_id(lock_id)
-            ip["lock_reason"] = lock["description"]
-
-        if not bool(int(ip["is_unlimited"])):
-            ip.pop("is_unlimited")
-        else:
-            ip["is_unlimited"] = True
+            status = ip.pop("lock_id")
+            if status is None:
+                ip["lock_status"] = "UNLOCKED"
+            else:
+                ip["lock_status"] = "LOCKED"
+            status = ip.pop("is_unlimited")
+            if status == 1:
+                ip["lock_status"] = "UNLIMITED"
 
     response = json(ips)
     return response
