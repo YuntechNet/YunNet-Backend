@@ -21,7 +21,7 @@ class user_ip_get_own_ip_doc(api.API):
             mac = doc.String("MAC address of an IP")
             is_updated = doc.Integer("if MAC is updated to switch")
             description = doc.String("IP description")
-            locked = doc.String("If a IP is locked")
+            lock_status = doc.String("IP lock status")
 
         model = doc.List(model)
 
