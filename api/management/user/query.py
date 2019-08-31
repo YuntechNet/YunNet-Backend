@@ -75,17 +75,18 @@ async def bp_user_query(request, query):
         for ip in ip_list:
             ip.pop("uid")
             ip.pop("gid")
-            ip.pop("lock_id")
 
             status = ip.get("lock_id", None)
             if status is None:
                 ip["lock_status"] = "UNLOCKED"
+
+                status = ip.get("is_unlimited", None)
+                if status == 1:
+                    ip["lock_status"] = "UNLIMITED"
+
             else:
                 ip["lock_status"] = "LOCKED"
 
-            status = ip.get("is_unlimited", None)
-            if status == 1:
-                ip["lock_status"] = "UNLIMITED"
         return ip_list
 
     resp = {"user": [], "ip": []}
