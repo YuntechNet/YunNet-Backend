@@ -52,7 +52,7 @@ class user_ip_lock_list_doc(api.API):
 @bp_lock.route("/<ip>/lock", methods=["GET"])
 @permission("index.lock_table.view")
 async def bp_user_ip_lock_list(request, username, ip):
-    username = request.args["token_username"]
+    username = request["username"]
     ips = await Ip.get_user_own_ip(username)
     target_ip = next((i for i in ips if i["ip"] == ip), None)
 

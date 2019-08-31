@@ -56,7 +56,7 @@ class user_set_owned_ip_mac_doc(api.API):
 @permission("index.userinfo.change_passwd.view")
 async def bp_user_change_password(request, username):
     config = request.app.config
-    username = request.args["token_username"]
+    username = request["username"]
     old_password_raw = request.json["old_password"]
     new_password_raw = request.json["new_password"]
 
