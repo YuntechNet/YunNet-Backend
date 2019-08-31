@@ -19,15 +19,16 @@ class Announcement:
             {
                 'announcement_id': int,
                 'title': str,
+                `uid`: user id
             },
         ]
         """
 
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
-                sql = "SELECT `announcement_id`,`title` FROM `announcement`"
+                sql = "SELECT `announcement_id`,`title`, `uid` FROM `announcement`"
                 await cur.execute(sql)
-                data = cur.fetchall()
+                data = await cur.fetchall()
                 await conn.commit()
 
         return data
@@ -51,13 +52,13 @@ class Announcement:
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
                 sql = (
-                    "SELECT `announcement_id`,`title`,`content` "
+                    "SELECT * "
                     "FROM `announcement` "
                     "WHERE announcement_id = %s"
                 )
                 await cur.execute(sql, id)
                 await conn.commit()
-                data = cur.fetchone()
+                data = await cur.fetchone()
 
         return data
 
