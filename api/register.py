@@ -4,6 +4,7 @@ from sanic.log import logger
 from sanic.response import json
 from sanic_openapi import doc, api
 from email.mime.text import MIMEText
+from aiosmtplib.errors import SMTPRecipientsRefused
 from hashlib import sha256
 from time import time
 
@@ -102,8 +103,10 @@ async def bp_register(request):
         mail["From"] = SMTP.sender
         mail["To"] = username + "@yuntech.edu.tw"
         mail["Subject"] = "YunNet Verify Email"
-        await SMTP.send_message(mail)
-        resp = messages.REGISTER_SUCCESS
+        try:
+            await SMTP.send_message(mail)
+        except SMTPRecipientsRefused:
+            return messages.MAIL_REFUSED
 
         # Insert to database
         uid = await User.get_user_id(username)
@@ -119,6 +122,6 @@ async def bp_register(request):
             return messages.INTERNAL_SERVER_ERROR
 
     else:
-        resp = messages.REGISTER_FAILED
+        return messages.REGISTER_FAILED
 
-    return resp
+    return messages.REGISTER_SUCCESS

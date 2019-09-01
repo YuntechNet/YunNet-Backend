@@ -67,15 +67,17 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                 await cur.execute(
                     "SELECT `value` FROM `variable` WHERE `name` = 'panda_activated'"
                 )
-                panda_activated = (await cur.fetchone())["value"]
+                panda_activated = bool(int((await cur.fetchone())["value"]))
                 if (now.hour < 7 and not panda_activated) or (now.hour >= 7 and panda_activated): 
                     # we should activate panda now
                     if now.hour < 7:
+                        logger.info("[YunNet.SwitchUpdate] Panda ACTIVATED.")
                         panda_locked = True
                         await cur.execute(
                                 "UPDATE `variable` SET `value` = '1' WHERE `variable`.`name` = 'panda_activated'"
                         )
                     else:
+                        logger.info("[YunNet.SwitchUpdate] Panda deactivated.")
                         panda_locked = False
                         await cur.execute(
                                 "UPDATE `variable` SET `value` = '0' WHERE `variable`.`name` = 'panda_activated'"

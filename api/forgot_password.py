@@ -5,6 +5,7 @@ from hashlib import sha256
 from sanic import Blueprint
 from sanic_openapi import doc, api
 from email.mime.text import MIMEText
+from aiosmtplib.errors import SMTPRecipientsRefused
 
 from Base import messages, SMTP, big5_encode
 from Query import User
@@ -78,11 +79,11 @@ async def bp_user_forgot_password(request):
     mail["From"] = SMTP.sender
     mail["To"] = username + "@yuntech.edu.tw"
     mail["Subject"] = "YunNet Password Reset"
-    await SMTP.send_message(mail)
-
-    resp = messages.OPERATION_SUCCESS
-
-    return resp
+    try:
+        await SMTP.send_message(mail)
+    except SMTPRecipientsRefused:
+        return messages.MAIL_REFUSED
+    return messages.OPERATION_SUCCESS
 
 
 class forgot_password_verify_doc(api.API):

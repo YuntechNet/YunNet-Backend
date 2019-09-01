@@ -22,6 +22,8 @@ PASSWORD_SUCCESSFULLY_CHANGED = json(msg("PASSWORD_SUCCESSFULLY_CHANGED"), statu
 # Token verify
 TOKEN_EXPIRED = json(msg("TOKEN_EXPIRED"), status=410)
 INVALID_TOKEN = json(msg("INVALID_TOKEN"), status=401)
+# SMTP error
+MAIL_REFUSED = json(msg("MAIL_REFUSED"), status=500)
 # MAC
 INVALID_MAC = json(msg("INVALID_MAC"), status=400)
 
