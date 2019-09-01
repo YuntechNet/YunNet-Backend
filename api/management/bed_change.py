@@ -2,6 +2,7 @@ from sanic import Blueprint
 from sanic_openapi import api, doc
 
 from Base import messages
+from Decorators import permission
 from Query.bed import Bed
 from Query.ip import Ip
 
@@ -43,6 +44,7 @@ class change_bed_doc(api.API):
 
 @change_bed_doc
 @bp_bed_change.route("/", methods=["POST"])
+@permission("system.dormitory.bed.exchange")
 async def change_bed(request):
     source_bed = request.json["source_bed"]
     dest_bed = request.json["dest_bed"]
