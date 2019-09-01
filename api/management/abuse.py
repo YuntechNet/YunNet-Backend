@@ -11,7 +11,7 @@ from Base.types import LockTypes
 from Query import Lock, User
 from Decorators import permission
 
-abuse = Blueprint("management-abuse")
+bp_abuse = Blueprint("management-abuse")
 
 
 class abuse_doc(api.API):
@@ -65,7 +65,7 @@ class abuse_doc(api.API):
 
 
 @abuse_doc
-@abuse.route("/abuse/<ip>", methods=["PUT"], strict_slashes=True)
+@bp_abuse.route("/abuse/<ip>", methods=["PUT"], strict_slashes=True)
 async def bp_abuse_put(request: Request, ip):
     try:
         json = request.json
