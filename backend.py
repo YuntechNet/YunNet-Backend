@@ -119,9 +119,10 @@ async def response_middleware(request, response):
     try:
         import json
         body = request.json
-        if "password" in body:
-            body.pop("password")
-        body = json.dumps(body)
+        if body is not None:
+            if "password" in body:
+                body.pop("password")
+            body = json.dumps(body)
     except:
         logger.info(traceback.format_exc())
         body = request.body.decode("utf-8")
