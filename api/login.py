@@ -53,6 +53,12 @@ class user_login_doc(api.API):
 @bp_login.route("/login", methods=["POST"])
 async def bp_user_login(request):
     config = request.app.config
+    try:
+        username = request.json["username"]
+        password = request.json["password"]
+        recaptcha_token = request.json["recaptcha_token"]
+    except:
+        return messages.BAD_REQUEST
     username = request.json["username"]
     password = request.json["password"]
     recaptcha_token = request.json["recaptcha_token"]
