@@ -88,7 +88,7 @@ async def request_middleware(request):
             if auth[0] == "Bearer":
                 try:
                     jwt_payload = jwt.decode(auth[1], config.JWT["jwtSecret"])
-                    request["username"] = jwt_payload["username"]
+                    request["username"] = jwt_payload["username"]        import json
                     request["permission"]: list = jwt_payload["permission"]
                 except jwt.ExpiredSignatureError:
                     return messages.SESSION_EXPIRED
@@ -115,6 +115,16 @@ async def response_middleware(request, response):
             except:
                 pass
     timenow = datetime.datetime.now()
+    body = None
+    try:
+        import json
+        body = request.json
+        if "password" in body:
+            body.pop("password")
+        body = json.dumps(body)
+    except:
+        logger.info(traceback.format_exc())
+        body = request.body.decode("utf-8")
     log_entry = {
         "timestamp": timenow,
         "unix_time": time.mktime(timenow.timetuple()),
@@ -123,9 +133,26 @@ async def response_middleware(request, response):
         "username": username,
         "endpoint": request.path,
         "query_string": request.query_string,
+        "body": body,
         "http_status": response.status,
     }
+    logger.info(body)
     if config.DEBUG_ENABLE_MONGO or not config.DEBUG:
+        session = None
+        if "Authorization" in request.headers:
+            session = request.headers["Authorization"]
+        log_entry = {
+            "timestamp": timenow,
+            "unix_time": time.mktime(timenow.timetuple()),
+            "method": request.method,
+            "session": session,
+            "ip": real_ip,
+            "username": username,
+            "endpoint": request.path,
+            "query_string": request.query_string,
+            "body": body,
+            "http_status": response.status,
+        }
         log_collection = request.app.mongo.log_collection
         await log_collection.insert_one(log_entry)
 
@@ -171,7 +198,7 @@ app.config.API_SECURITY_DEFINITIONS = {
     }
 }
 
-# import API blueprints into app
+# import API bluepbody
 app.blueprint(api)
 
 if __name__ == "__main__":
