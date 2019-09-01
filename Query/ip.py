@@ -1,4 +1,5 @@
 import datetime
+import re
 
 from aiomysql import DictCursor
 from pymysql import MySQLError
@@ -25,6 +26,17 @@ class Ip:
     #         dicts = [dict(zip(key, d)) for d in data]
     #
     #     return dicts
+    @staticmethod
+    async def assign_user(ip, uid):
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                sql = "UPDATE `iptable` SET `uid` = %s WHERE `ip` = %s "
+                para_input = (uid,ip)
+                await cur.execute(sql, para_input)
+                await conn.commit()
+
+                return True
+
     @staticmethod
     async def get_ip_by_id(ip):
         """
@@ -83,6 +95,9 @@ class Ip:
             }
 
         """
+        bed_regex = "^[A-Za-z][0-9]{4}-[0-9]$"
+        if re.search(bed_regex, bed) is None:
+            return None
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
                 sql = (
