@@ -88,7 +88,7 @@ async def request_middleware(request):
             if auth[0] == "Bearer":
                 try:
                     jwt_payload = jwt.decode(auth[1], config.JWT["jwtSecret"])
-                    request["username"] = jwt_payload["username"]        import json
+                    request["username"] = jwt_payload["username"]
                     request["permission"]: list = jwt_payload["permission"]
                 except jwt.ExpiredSignatureError:
                     return messages.SESSION_EXPIRED
@@ -101,7 +101,7 @@ async def response_middleware(request, response):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     real_ip: str = None
     username: str = None
-    Request.ip
+    # Request.ip
     if "X-Forwarded-For" in request.headers:
         real_ip = request.headers["X-Forwarded-For"]
     else:
@@ -125,17 +125,18 @@ async def response_middleware(request, response):
     except:
         logger.info(traceback.format_exc())
         body = request.body.decode("utf-8")
-    log_entry = {
-        "timestamp": timenow,
-        "unix_time": time.mktime(timenow.timetuple()),
-        "method": request.method,
-        "ip": real_ip,
-        "username": username,
-        "endpoint": request.path,
-        "query_string": request.query_string,
-        "body": body,
-        "http_status": response.status,
-    }
+
+    # log_entry = {
+    #     "timestamp": timenow,
+    #     "unix_time": time.mktime(timenow.timetuple()),
+    #     "method": request.method,
+    #     "ip": real_ip,
+    #     "username": username,
+    #     "endpoint": request.path,
+    #     "query_string": request.query_string,
+    #     "body": body,
+    #     "http_status": response.status,
+    # }
     logger.info(body)
     if config.DEBUG_ENABLE_MONGO or not config.DEBUG:
         session = None

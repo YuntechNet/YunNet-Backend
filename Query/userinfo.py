@@ -36,8 +36,6 @@ class Userinfo:
 
                 if data is None:
                     return None
-
-                logger.warning(data)
         return data
 
     @staticmethod
