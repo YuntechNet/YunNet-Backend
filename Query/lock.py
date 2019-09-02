@@ -139,3 +139,28 @@ class Lock:
                 await cur.execute(ip_set_lock_id_query, set_lock_tuple_input)
                 await conn.commit()
                 return True
+
+    @staticmethod
+    async def unlock(ip: str):
+        """set user lock by username
+
+        Args:
+            ip: ip address, str
+
+        Returns:
+            bool. If lock data is success set return True,
+            if catch error return False.
+
+        """
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor() as cur:
+                sql = (
+                    "UPDATE `iptable` AS i "
+                    "INNER JOIN `lock` AS lo ON i.lock_id = lo.lock_id "
+                    "SET i.is_updated = 0,i.lock_id = null, lo.unlock_date = CURRENT_TIMESTAMP "
+                    "WHERE i.ip = %s "
+                )
+                para_input = ip
+                await cur.execute(sql, para_input)
+                await conn.commit()
+                return True

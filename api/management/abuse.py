@@ -97,3 +97,71 @@ async def bp_abuse_put(request: Request, ip):
     app_config: config = request.app.config
     asyncio.create_task(switch_update(app_config.MAC_UPDATER_ENDPOINT))
     return messages.ACCEPTED
+
+
+class unlock_abuse_doc(api.API):
+    # consumes_content_type = "application/json"
+    # consumes_location = "body"
+    # consumes_required = True
+    #
+    # class consumes:
+    #     title = doc.String("unlock title for public")
+    #     description = doc.String("unlock description")
+
+    consumes = doc.JsonBody(vars(consumes))
+
+    class SuccessResp:
+        code = 200
+        description = "On request succeded"
+
+        class model:
+            message = doc.String("OPERATION_SUCCESS")
+
+        model = dict(vars(model))
+
+    class FailResp:
+        code = 400
+        description = "On failed request"
+
+        class model:
+            message = doc.String("BAD_REQUEST")
+
+        model = dict(vars(model))
+
+    class ServerFailResp:
+        code = 500
+        description = "When server failed to process the response"
+
+        class model:
+            message = doc.String("INTERNAL_SERVER_ERROR")
+
+        model = dict(vars(model))
+
+    class AuthResp:
+        code = 401
+        description = "On failed auth"
+
+        class model:
+            message = doc.String("Error message")
+
+        model = dict(vars(model))
+
+    response = [SuccessResp, FailResp, ServerFailResp, AuthResp]
+
+
+@unlock_abuse_doc
+@bp_abuse.route("/abuse/<ip>", methods=["DELETE"], strict_slashes=True)
+@permission("system.universal.abuse.unlock")
+async def bp_abuse_put(request: Request, ip):
+    try:
+        pass
+        # unlocked_by = await User.get_user_id(request["username"])
+    except Exception as e:
+        logger.debug(e.with_traceback())
+        return messages.BAD_REQUEST
+
+    await Lock.unlock(ip)
+
+    app_config: config = request.app.config
+    asyncio.create_task(switch_update(app_config.MAC_UPDATER_ENDPOINT))
+    return messages.ACCEPTED
