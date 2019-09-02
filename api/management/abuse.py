@@ -13,6 +13,7 @@ from Base.types import LockTypes
 from Query import Lock, User
 from Decorators import permission
 from BackgroundJobs import switch_update
+from Query.ip import Ip
 
 bp_abuse = Blueprint("management-abuse")
 
@@ -81,11 +82,17 @@ async def bp_abuse_put(request: Request, ip):
             lock_until = datetime.strptime(lock_until_str, "%Y-%m-%d")
         locked_by = await User.get_user_id(request["username"])
 
+        ip_data = await Ip.get_ip_by_id(ip)
+        uid = ip_data["uid"]
+        gid = ip_data["gid"]
+
     except Exception as e:
         logger.debug(e.with_traceback())
         return messages.BAD_REQUEST
-    
-    await Lock.set_lock(ip, 1, datetime.now(), lock_until, title, description, locked_by)
+
+    await Lock.set_lock(
+        ip, 1, datetime.now(), lock_until, title, description, uid, gid, locked_by
+    )
     app_config: config = request.app.config
     asyncio.create_task(switch_update(app_config.API_ENDPOINT))
     return messages.ACCEPTED
