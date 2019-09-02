@@ -95,5 +95,5 @@ async def bp_abuse_put(request: Request, ip):
         ip, 1, datetime.now(), lock_until, title, description, uid, gid, locked_by
     )
     app_config: config = request.app.config
-    asyncio.create_task(switch_update(app_config.API_ENDPOINT))
+    asyncio.create_task(switch_update(app_config.MAC_UPDATER_ENDPOINT))
     return messages.ACCEPTED
