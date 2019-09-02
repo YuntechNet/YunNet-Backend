@@ -24,8 +24,9 @@ class Lock:
                     lock_id: int,
                     lock_type_id: int,
                     ip: str,
-                    lock_date: datetime
-                    unlock_date: datetime
+                    lock_date: datetime,
+                    unlock_date: datetime,
+                    title: str,
                     description: str,
                     lock_by_user_id: int
                 },
@@ -66,8 +67,9 @@ class Lock:
                 lock_id: int,
                 lock_type_id: int,
                 ip: str,
-                lock_date: datetime
-                unlock_date: datetime
+                lock_date: datetime,
+                unlock_date: datetime,
+                title: str,
                 description: str,
                 lock_by_user_id: int
             }
@@ -88,6 +90,7 @@ class Lock:
         lock_type: LockTypes,
         lock_date: datetime,
         unlock_date: datetime = None,
+        title: str = None,
         description: str = None,
         lock_by_user_id=None,
     ) -> bool:
@@ -114,6 +117,7 @@ class Lock:
                     ip,
                     lock_date,
                     unlock_date,
+                    title,
                     description,
                     lock_by_user_id,
                 )

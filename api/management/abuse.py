@@ -5,11 +5,14 @@ from sanic.log import logger
 from datetime import datetime
 from sanic_openapi import doc, api
 from sanic_openapi.doc import JsonBody
+import asyncio
 
+import config
 from Base import messages
 from Base.types import LockTypes
 from Query import Lock, User
 from Decorators import permission
+from BackgroundJobs import switch_update
 
 bp_abuse = Blueprint("management-abuse")
 
@@ -66,10 +69,12 @@ class abuse_doc(api.API):
 
 @abuse_doc
 @bp_abuse.route("/abuse/<ip>", methods=["PUT"], strict_slashes=True)
+@permission("system.universal.abuse.lock")
 async def bp_abuse_put(request: Request, ip):
     try:
         json = request.json
-        reason = json["reason"]
+        title = json["title"]
+        description = title["description"]
         lock_until_str = json["lock_until"]
         lock_until = None
         if lock_until_str is not None:
@@ -79,5 +84,7 @@ async def bp_abuse_put(request: Request, ip):
         logger.debug(e.with_traceback())
         return messages.BAD_REQUEST
     
-    await Lock.set_lock(ip, 1, datetime.now(), lock_until, reason, locked_by)
-    return messages.OPERATION_SUCCESS
+    await Lock.set_lock(ip, 1, datetime.now(), lock_until, title, description, locked_by)
+    app_config: config = request.app.config
+    asyncio.create_task(switch_update(app_config.API_ENDPOINT))
+    return messages.ACCEPTED
