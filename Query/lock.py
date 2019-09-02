@@ -24,6 +24,8 @@ class Lock:
                     lock_id: int,
                     lock_type_id: int,
                     ip: str,
+                    uid: int,
+                    gid: int,
                     lock_date: datetime,
                     unlock_date: datetime,
                     title: str,
@@ -67,6 +69,8 @@ class Lock:
                 lock_id: int,
                 lock_type_id: int,
                 ip: str,
+                uid: int,
+                gid: int,
                 lock_date: datetime,
                 unlock_date: datetime,
                 title: str,
@@ -92,6 +96,8 @@ class Lock:
         unlock_date: datetime = None,
         title: str = None,
         description: str = None,
+        uid: int = None,
+        gid: int = None,
         lock_by_user_id=None,
     ) -> bool:
         """set user lock by username
@@ -103,6 +109,8 @@ class Lock:
             unlock_date:  unlock date, datetime
             title: title, str
             description: description, str
+            uid:Lock current user, int
+            gid:Lock current group, int
             lock_by_user_id: lock by user, int
 
         Returns:
@@ -112,10 +120,12 @@ class Lock:
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = "INSERT INTO `lock` VALUES (null, %s, %s, %s, %s, %s, %s, %s)"
+                sql = "INSERT INTO `lock` VALUES (null, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                 para_input = (
                     lock_type,
                     ip,
+                    uid,
+                    gid,
                     lock_date,
                     unlock_date,
                     title,

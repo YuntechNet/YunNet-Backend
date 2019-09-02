@@ -72,14 +72,15 @@ class abuse_doc(api.API):
 @permission("system.universal.abuse.lock")
 async def bp_abuse_put(request: Request, ip):
     try:
-        json = request.json
-        title = json["title"]
-        description = title["description"]
-        lock_until_str = json["lock_until"]
+        title = request.json["title"]
+        description = request.json["description"]
+        lock_until_str = request.json["lock_until"]
         lock_until = None
+
         if lock_until_str is not None:
             lock_until = datetime.strptime(lock_until_str, "%Y-%m-%d")
         locked_by = await User.get_user_id(request["username"])
+
     except Exception as e:
         logger.debug(e.with_traceback())
         return messages.BAD_REQUEST
