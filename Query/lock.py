@@ -101,6 +101,7 @@ class Lock:
             lock_type: locktypes, int or LockTypes
             lock_date: lock date, datetime
             unlock_date:  unlock date, datetime
+            title: title, str
             description: description, str
             lock_by_user_id: lock by user, int
 
@@ -111,7 +112,7 @@ class Lock:
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = "INSERT INTO `lock` VALUES (null, %s, %s, %s, %s, %s, %s)"
+                sql = "INSERT INTO `lock` VALUES (null, %s, %s, %s, %s, %s, %s, %s)"
                 para_input = (
                     lock_type,
                     ip,

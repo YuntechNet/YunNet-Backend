@@ -59,9 +59,6 @@ async def bp_user_login(request):
         recaptcha_token = request.json["recaptcha_token"]
     except:
         return messages.BAD_REQUEST
-    username = request.json["username"]
-    password = request.json["password"]
-    recaptcha_token = request.json["recaptcha_token"]
 
     # google reCaptcha verify
     if request.app.config.RECAPTCHA["enabled"]:
