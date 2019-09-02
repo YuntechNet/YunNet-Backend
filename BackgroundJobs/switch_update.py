@@ -123,8 +123,6 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                     else:
                         entry["lock"] = True
                     entry.pop("lock_id")
-                    if entry["ip"] in panda_ip_list:
-                         entry["lock"] = True
                 # grab switches+ "/heartbeat"
                 switch_query = "SELECT `ip`, `id`, `upper_switch`, `upper_port`, `upper_port_type`, `account`, `password`, `vlan`, `machine_type`, `port_description`, `port_type` FROM `switch`"
                 await cur.execute(switch_query)
