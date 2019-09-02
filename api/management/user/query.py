@@ -99,24 +99,20 @@ async def bp_user_query(request, query):
         mode = "ip"
         user = await Userinfo.get_fullinfo(query, mode)
 
-        if user is None:
-            ip = await Ip.get_ip_by_id(query)
-            resp["ip"] = ip
-            return json(resp)
+        if user is not None:
+            user.pop("password_hash")
 
-        user.pop("password_hash")
+            group = await Group.get_user_group(user["username"])
+            for g in group:
+                group_list.append(g["description"])
+            user["group"] = ([], group_list)[group_list is not None]
 
-        ip_list = await Ip.get_user_own_ip(user["username"])
-        if ip_list is not None:
-            ip_list = ip_list_wraper(ip_list)
+        ip = await Ip.get_ip_by_id(query)
+        if ip is not None:
+            ip = ip_list_wraper([ip])
 
-        group = await Group.get_user_group(user["username"])
-        for g in group:
-            group_list.append(g["description"])
-
-        user["group"] = group_list
-        resp["user"] = user
-        resp["ip"] = ip_list
+        resp["user"] = user if user is not None else []
+        resp["ip"] = ip if ip is not None else []
 
     elif re.search(bed_regex, query.upper()) is not None:
         mode = "bed"

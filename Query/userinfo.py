@@ -79,6 +79,7 @@ class Userinfo:
                     )
                 else:
                     return None
+
                 para_input = query
                 await cur.execute(sql, para_input)
                 data = await cur.fetchone()
