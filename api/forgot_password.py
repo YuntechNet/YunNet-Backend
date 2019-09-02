@@ -55,8 +55,16 @@ async def bp_user_forgot_password(request):
         "請點擊下方連結重置您的密碼：\n"
         "https://yunnet.yuntech.edu.tw/#/set_password/{0}\n"
         "\n"
+        "\n"
         "Please click following link to reset your password:\n"
         "https://yunnet.yuntech.edu.tw/#/set_password/{0}\n"
+        "\n"
+        "\n"
+        "連結有效時間為一小時."
+        "Verify link will expire in 1 hour. \n"
+        "\n"
+        "如果連結過期,請重新申請."
+        "If link expire, Please re-apply"
         "\n"
     )
     # Token creation
