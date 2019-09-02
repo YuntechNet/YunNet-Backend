@@ -24,6 +24,8 @@ class Lock:
                     lock_id: int,
                     lock_type_id: int,
                     ip: str,
+                    uid: int,
+                    gid: int,
                     lock_date: datetime,
                     unlock_date: datetime,
                     title: str,
@@ -67,6 +69,8 @@ class Lock:
                 lock_id: int,
                 lock_type_id: int,
                 ip: str,
+                uid: int,
+                gid: int,
                 lock_date: datetime,
                 unlock_date: datetime,
                 title: str,
@@ -82,8 +86,6 @@ class Lock:
                 data = await cur.fetchone()
                 return data
 
-
-
     @staticmethod
     async def set_lock(
         ip: str,
@@ -92,6 +94,8 @@ class Lock:
         unlock_date: datetime = None,
         title: str = None,
         description: str = None,
+        uid: int = None,
+        gid: int = None,
         lock_by_user_id=None,
     ) -> bool:
         """set user lock by username
@@ -101,7 +105,10 @@ class Lock:
             lock_type: locktypes, int or LockTypes
             lock_date: lock date, datetime
             unlock_date:  unlock date, datetime
+            title: title, str
             description: description, str
+            uid:Lock current user, int
+            gid:Lock current group, int
             lock_by_user_id: lock by user, int
 
         Returns:
@@ -111,10 +118,12 @@ class Lock:
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = "INSERT INTO `lock` VALUES (null, %s, %s, %s, %s, %s, %s)"
+                sql = "INSERT INTO `lock` VALUES (null, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                 para_input = (
                     lock_type,
                     ip,
+                    uid,
+                    gid,
                     lock_date,
                     unlock_date,
                     title,
@@ -125,11 +134,33 @@ class Lock:
                 lock_id_query = "SELECT `lock_id` FROM `lock` WHERE `ip` = %s ORDER BY `lock_date` DESC"
                 await cur.execute(lock_id_query, ip)
                 lock_id = await cur.fetchone()
-                ip_set_lock_id_query = "UPDATE `iptable` SET `lock_id` = %s WHERE `ip` = %s"
-                set_lock_tuple_input = (
-                    lock_id,
-                    ip
-                )
+                ip_set_lock_id_query = "UPDATE `iptable` SET `lock_id` = %s, `is_updated` = 0 WHERE `ip` = %s"
+                set_lock_tuple_input = (lock_id, ip)
                 await cur.execute(ip_set_lock_id_query, set_lock_tuple_input)
+                await conn.commit()
+                return True
+
+    @staticmethod
+    async def unlock(ip: str):
+        """set user lock by username
+
+        Args:
+            ip: ip address, str
+
+        Returns:
+            bool. If lock data is success set return True,
+            if catch error return False.
+
+        """
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor() as cur:
+                sql = (
+                    "UPDATE `iptable` AS i "
+                    "INNER JOIN `lock` AS lo ON i.lock_id = lo.lock_id "
+                    "SET i.is_updated = 0,i.lock_id = null, lo.unlock_date = CURRENT_TIMESTAMP "
+                    "WHERE i.ip = %s "
+                )
+                para_input = ip
+                await cur.execute(sql, para_input)
                 await conn.commit()
                 return True

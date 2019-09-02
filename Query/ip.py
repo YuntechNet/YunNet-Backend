@@ -65,7 +65,7 @@ class Ip:
                 sql = "SELECT * " "FROM `iptable`" "WHERE `ip` = %s "
                 para_input = ip
                 await cur.execute(sql, para_input)
-                data = await cur.fetchall()
+                data = await cur.fetchone()
 
                 if data is None:
                     return None
