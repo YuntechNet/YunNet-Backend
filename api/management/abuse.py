@@ -108,7 +108,7 @@ class unlock_abuse_doc(api.API):
     #     title = doc.String("unlock title for public")
     #     description = doc.String("unlock description")
 
-    consumes = doc.JsonBody(vars(consumes))
+    #consumes = doc.JsonBody(vars(consumes))
 
     class SuccessResp:
         code = 200
@@ -152,7 +152,7 @@ class unlock_abuse_doc(api.API):
 @unlock_abuse_doc
 @bp_abuse.route("/abuse/<ip>", methods=["DELETE"], strict_slashes=True)
 @permission("system.universal.abuse.unlock")
-async def bp_abuse_put(request: Request, ip):
+async def bp_abuse_unlock(request: Request, ip):
     try:
         pass
         # unlocked_by = await User.get_user_id(request["username"])
