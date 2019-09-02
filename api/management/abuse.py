@@ -24,7 +24,8 @@ class abuse_doc(api.API):
     consumes_required = True
 
     class consumes:
-        reason = doc.String("reason")
+        title = doc.String("lock title for public")
+        description = doc.String("description only for admin")
         lock_until = doc.Date("YYYY-MM-DD")
 
     consumes = doc.JsonBody(vars(consumes))
