@@ -5,45 +5,51 @@ from Base import SQLPool
 
 
 class User:
+    @staticmethod
+    async def delete_user(username):
+        """Add user. Actually is Disable user
 
-    # TODO(biboy1999):WIP management logic
-    # def new_user(self, username: str, password: str, name: str,
-    #              group_code: str = '0100') -> bool:
-    #     """Add new user.
-    #
-    #     Args:
-    #         username:username.
-    #         password:password_hash.
-    #         group_code:set user group, default is user.stop(0100).
-    #
-    #     Returns:
-    #         bool. If user successful added return True,
-    #         if catch error return False.
-    #
-    #     """
-    #     with self.connection.cursor() as cur:
-    #         sql = ("INSERT INTO `userinfo` (`account`, `department`, `name`) "
-    #                "VALUES (%s, %s, %s)")
-    #
-    #         para_input = (username, "", name)
-    #         sql_user = (
-    #             "INSERT INTO `user` (`account_id`, `passwd`, `group_id`, "
-    #             "`exclude_per`, `extend_per`, `extend_group`) "
-    #             "VALUES (%s, %s, %s, %s, %s, %s)")
-    #         para_input2 = (username, password, group_code, "[]", "[]", "[]")
-    #         try:
-    #             cur.execute(sql, para_input)
-    #             cur.execute(sql_user, para_input2)
-    #             self.commit()
-    #             return True
-    #         except MySQLError as e:
-    #             self.rollback()
-    #             logger.error("got error {}, {}".format(e, e.args[0]))
-    #             logger.error("fail to add userinfo SQL:{}".format(
-    #                 cur.mogrify(sql, para_input)))
-    #             logger.error("fail to add user SQL:{}".format(
-    #                 cur.mogrify(sql_user, para_input2)))
-    #             return False
+        Args:
+            username: username.
+        Returns:
+            int. return affected row count.
+
+        """
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                sql = (
+                    "DELETE gu "
+                    "FROM `group_user` AS gu "
+                    "INNER JOIN `user` AS u ON u.uid = gu.uid "
+                    "WHERE u.username = %s"
+                )
+                para_input = username
+                affected = await cur.execute(sql, para_input)
+                await conn.commit()
+        return affected
+
+    @staticmethod
+    async def add_user(username, nick, department="", back_mail="", note=""):
+        """Add new user.
+
+        Args:
+            username: username. str
+            nick: user's name. str
+            department: user's department. str
+            back_mail: user's email. str
+            note: note. str
+        Returns:
+            int. return affected row count.
+
+        """
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                sql = "INSERT INTO `user` VALUES (null, %s, null, %s, %s, %s, %s)"
+                para_input = (username, nick, department, back_mail, note)
+                affected = await cur.execute(sql, para_input)
+                await conn.commit()
+        return affected
+
     @staticmethod
     async def get_user_id(username: str):
         """Get actual uid by username

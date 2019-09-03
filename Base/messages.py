@@ -27,6 +27,10 @@ MAIL_REFUSED = json(msg("MAIL_REFUSED"), status=500)
 # MAC
 INVALID_MAC = json(msg("INVALID_MAC"), status=400)
 
+# management
+USER_ALREADY_EXIST = json(msg("USER_ALREADY_EXIST"), status=400)
+USER_NOT_EXIST = json(msg("USER_NOT_EXIST"), status=400)
+
 ACCEPTED = json(msg("ACCEPTED"), status=202)
 OPERATION_SUCCESS = json(msg("OPERATION_SUCCESS"), status=200)
 BAD_REQUEST = json(msg("BAD_REQUEST"), status=400)
