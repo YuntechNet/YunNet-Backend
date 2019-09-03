@@ -79,7 +79,10 @@ async def bp_abuse_put(request: Request, ip):
         description = request.json["description"]
         lock_until_str = request.json["lock_until"]
         lock_until = None
-        no_update = request.json["no_update"]
+        no_update = False
+        if "no_update" in request.json.keys():
+            if request.json["no_update"]:
+                no_update = True
 
         if lock_until_str is not None:
             lock_until = datetime.strptime(lock_until_str, "%Y-%m-%d")
