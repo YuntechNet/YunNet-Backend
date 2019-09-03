@@ -12,7 +12,7 @@ from Base import messages
 from Base.types import LockTypes
 from Query import Lock, User
 from Decorators import permission
-from BackgroundJobs import switch_update
+from BackgroundJobs.switch_update import do_switch_update
 from Query.ip import Ip
 
 bp_abuse = Blueprint("management-abuse")
@@ -95,7 +95,7 @@ async def bp_abuse_put(request: Request, ip):
         ip, 1, datetime.now(), lock_until, title, description, uid, gid, locked_by
     )
     app_config: config = request.app.config
-    asyncio.create_task(switch_update(app_config.MAC_UPDATER_ENDPOINT))
+    asyncio.create_task(do_switch_update(app_config.MAC_UPDATER_ENDPOINT, True))
     return messages.ACCEPTED
 
 
@@ -163,5 +163,5 @@ async def bp_abuse_unlock(request: Request, ip):
     await Lock.unlock(ip)
 
     app_config: config = request.app.config
-    asyncio.create_task(switch_update(app_config.MAC_UPDATER_ENDPOINT))
+    asyncio.create_task(do_switch_update(app_config.MAC_UPDATER_ENDPOINT, True))
     return messages.ACCEPTED
