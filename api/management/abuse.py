@@ -27,6 +27,7 @@ class abuse_doc(api.API):
         title = doc.String("lock title for public")
         description = doc.String("description only for admin")
         lock_until = doc.Date("YYYY-MM-DD")
+        no_update = doc.Boolean("Should do switch_update(dev only)")
 
     consumes = doc.JsonBody(vars(consumes))
 
@@ -78,6 +79,7 @@ async def bp_abuse_put(request: Request, ip):
         description = request.json["description"]
         lock_until_str = request.json["lock_until"]
         lock_until = None
+        no_update = request.json["no_update"]
 
         if lock_until_str is not None:
             lock_until = datetime.strptime(lock_until_str, "%Y-%m-%d")
@@ -95,7 +97,8 @@ async def bp_abuse_put(request: Request, ip):
         ip, 1, datetime.now(), lock_until, title, description, uid, gid, locked_by
     )
     app_config: config = request.app.config
-    asyncio.create_task(do_switch_update(app_config.MAC_UPDATER_ENDPOINT, True))
+    if not no_update:
+        asyncio.create_task(do_switch_update(app_config.MAC_UPDATER_ENDPOINT, True))
     return messages.ACCEPTED
 
 
@@ -108,7 +111,7 @@ class unlock_abuse_doc(api.API):
     #     title = doc.String("unlock title for public")
     #     description = doc.String("unlock description")
 
-    #consumes = doc.JsonBody(vars(consumes))
+    # consumes = doc.JsonBody(vars(consumes))
 
     class SuccessResp:
         code = 200
