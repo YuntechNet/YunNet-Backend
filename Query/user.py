@@ -25,6 +25,15 @@ class User:
                 )
                 para_input = username
                 affected = await cur.execute(sql, para_input)
+                # release user's used ip
+                sql = (
+                    "UPDATE `iptable` AS i "
+                    "INNER JOIN `user` AS u "
+                    "ON i.`uid` = u.`uid` "
+                    "SET i.`uid` = 0 "
+                    "WHERE u.`username` = %s "
+                )
+                affected = await cur.execute(sql, para_input)
                 await conn.commit()
         return affected
 

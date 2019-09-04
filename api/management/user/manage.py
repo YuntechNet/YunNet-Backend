@@ -6,7 +6,7 @@ from Base import messages
 from Query import User
 from Query.userinfo import Userinfo
 
-manage = Blueprint("management-user-manage")
+bp_user_manage = Blueprint("management-user-manage")
 
 
 class add_user_doc(api.API):
@@ -46,7 +46,7 @@ class add_user_doc(api.API):
 
 
 @add_user_doc
-@manage.route("/<username>", methods=["POST"])
+@bp_user_manage.route("/<username>", methods=["POST"])
 async def bp_add_user(request, username):
     user = await Userinfo.get_userinfo(username)
     if user is not None:
@@ -95,7 +95,7 @@ class delete_user_doc(api.API):
 
 
 @delete_user_doc
-@manage.route("/<username>", methods=["DELETE"])
+@bp_user_manage.route("/<username>", methods=["DELETE"])
 async def bp_delete(request, username):
     user = await Userinfo.get_userinfo(username)
     if user is not None:
