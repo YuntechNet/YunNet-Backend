@@ -111,7 +111,6 @@ async def bp_register(request):
         try:
             await SMTP.send_message(mail)
         except SMTPRecipientsRefused as e:
-            logger.error(e.recipients[0].message)
             return json({"message": e.recipients[0].message}, 500)
 
         # Insert to database
