@@ -110,8 +110,9 @@ async def bp_register(request):
         mail["Subject"] = "YunNet Verify Email"
         try:
             await SMTP.send_message(mail)
-        except SMTPRecipientsRefused:
-            return messages.MAIL_REFUSED
+        except SMTPRecipientsRefused as e:
+            logger.error(e.recipients[0].message)
+            return json({"message": e.recipients[0].message}, 500)
 
         # Insert to database
         uid = await User.get_user_id(username)
