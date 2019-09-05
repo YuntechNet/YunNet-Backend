@@ -79,7 +79,7 @@ async def bp_abuse_put(request: Request, ip):
         description = request.json["description"]
         lock_until_str = request.json["lock_until"]
 
-        if None in (title, description, lock_until_str):
+        if None in (title, description):
             return messages.BAD_REQUEST
 
         lock_until = None
