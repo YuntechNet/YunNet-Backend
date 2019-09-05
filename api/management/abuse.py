@@ -78,6 +78,10 @@ async def bp_abuse_put(request: Request, ip):
         title = request.json["title"]
         description = request.json["description"]
         lock_until_str = request.json["lock_until"]
+
+        if None in (title, description):
+            return messages.BAD_REQUEST
+
         lock_until = None
         no_update = False
         if "no_update" in request.json.keys():
@@ -97,7 +101,15 @@ async def bp_abuse_put(request: Request, ip):
         return messages.BAD_REQUEST
 
     await Lock.set_lock(
-        ip, 1, datetime.now(), lock_until, title, description, uid, gid, locked_by
+        ip,
+        0,
+        datetime.now(),
+        lock_until,
+        title,
+        description,
+        uid,
+        gid,
+        locked_by,
     )
     app_config: config = request.app.config
     if not no_update:
