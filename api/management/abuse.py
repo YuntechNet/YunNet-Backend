@@ -102,7 +102,7 @@ async def bp_abuse_put(request: Request, ip):
 
     await Lock.set_lock(
         ip,
-        LockTypes.ABUSE,
+        0,
         datetime.now(),
         lock_until,
         title,
