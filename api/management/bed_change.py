@@ -44,7 +44,7 @@ class change_bed_doc(api.API):
 
 @change_bed_doc
 @bp_bed_change.route("/", methods=["POST"])
-@permission("system.dormitory.bed.exchange")
+@permission("api.bed.exchange")
 async def change_bed(request):
     source_bed = request.json["source_bed"]
     dest_bed = request.json["dest_bed"]

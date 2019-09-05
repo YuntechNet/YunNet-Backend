@@ -74,7 +74,7 @@ async def bp_user_login(request):
 
     # check login permission
     # TODO(biboy1999):now use group to check user login permission, will be remove after permission rework
-    allowed = await Permission.check_permission(username, "index.login.login")
+    allowed = await Permission.check_permission(username, "api.login")
     if not allowed:
         return messages.NO_PERMISSION
 
