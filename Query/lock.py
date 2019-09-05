@@ -141,11 +141,12 @@ class Lock:
                 return True
 
     @staticmethod
-    async def unlock(ip: str):
+    async def unlock(ip: str, date=None):
         """set user lock by username
 
         Args:
             ip: ip address, str
+            date: set unlock date,str ,optional
 
         Returns:
             bool. If lock data is success set return True,
@@ -154,13 +155,23 @@ class Lock:
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor() as cur:
-                sql = (
-                    "UPDATE `iptable` AS i "
-                    "INNER JOIN `lock` AS lo ON i.lock_id = lo.lock_id "
-                    "SET i.is_updated = 0,i.lock_id = null, lo.unlock_date = CURRENT_TIMESTAMP "
-                    "WHERE i.ip = %s "
-                )
-                para_input = ip
+                if date is None:
+                    sql = (
+                        "UPDATE `iptable` AS i "
+                        "INNER JOIN `lock` AS lo ON i.lock_id = lo.lock_id "
+                        "SET i.is_updated = 0,i.lock_id = null, lo.unlock_date = CURRENT_TIMESTAMP "
+                        "WHERE i.ip = %s "
+                    )
+                    para_input = ip
+                else:
+                    sql = (
+                        "UPDATE `iptable` AS i "
+                        "INNER JOIN `lock` AS lo ON i.lock_id = lo.lock_id "
+                        "SET lo.unlock_date = %s "
+                        "WHERE i.ip = %s "
+                    )
+                    # datetime.strptime(date,"")
+                    para_input = date, ip
                 await cur.execute(sql, para_input)
                 await conn.commit()
                 return True

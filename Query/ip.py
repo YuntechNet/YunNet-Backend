@@ -31,7 +31,7 @@ class Ip:
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
                 sql = "UPDATE `iptable` SET `uid` = %s WHERE `ip` = %s "
-                para_input = (uid,ip)
+                para_input = (uid, ip)
                 await cur.execute(sql, para_input)
                 await conn.commit()
 
@@ -62,7 +62,7 @@ class Ip:
         """
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
-                sql = "SELECT * " "FROM `iptable`" "WHERE `ip` = %s "
+                sql = "SELECT * FROM `iptable` WHERE `ip` = %s "
                 para_input = ip
                 await cur.execute(sql, para_input)
                 data = await cur.fetchone()

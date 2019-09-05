@@ -106,15 +106,16 @@ async def bp_abuse_put(request: Request, ip):
 
 
 class unlock_abuse_doc(api.API):
-    # consumes_content_type = "application/json"
-    # consumes_location = "body"
-    # consumes_required = True
-    #
-    # class consumes:
-    #     title = doc.String("unlock title for public")
-    #     description = doc.String("unlock description")
+    consumes_content_type = "application/json"
+    consumes_location = "body"
+    consumes_required = False
 
-    # consumes = doc.JsonBody(vars(consumes))
+    class consumes:
+        unlock_date = doc.Date(
+            "Set unlock date. if not provided will unlock immediately"
+        )
+
+    consumes = doc.JsonBody(vars(consumes))
 
     class SuccessResp:
         code = 200
@@ -160,14 +161,18 @@ class unlock_abuse_doc(api.API):
 @permission("system.universal.abuse.unlock")
 async def bp_abuse_unlock(request: Request, ip):
     try:
-        pass
-        # unlocked_by = await User.get_user_id(request["username"])
+
+        if request.json is not None and "unlock_date" in request.json:
+            date = request.json["unlock_date"]
+            datetime.strptime(date, "%Y-%m-%d")
+            await Lock.unlock(ip, date)
+        else:
+            await Lock.unlock(ip)
+
+        app_config: config = request.app.config
+        asyncio.create_task(do_switch_update(app_config.MAC_UPDATER_ENDPOINT, True))
+        return messages.ACCEPTED
+
     except Exception as e:
         logger.debug(e.with_traceback())
         return messages.BAD_REQUEST
-
-    await Lock.unlock(ip)
-
-    app_config: config = request.app.config
-    asyncio.create_task(do_switch_update(app_config.MAC_UPDATER_ENDPOINT, True))
-    return messages.ACCEPTED
