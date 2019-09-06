@@ -76,7 +76,6 @@ class delete_user_doc(api.API):
 
         class model:
             username = doc.String("Username")
-            token = doc.String("User's jwt token")
 
         model = dict(vars(model))
 
@@ -125,7 +124,6 @@ class add_user_doc(api.API):
 
         class model:
             username = doc.String("Username")
-            token = doc.String("User's jwt token")
 
         model = dict(vars(model))
 
@@ -142,7 +140,7 @@ class add_user_doc(api.API):
 
 
 @add_user_doc
-@bp_bed_change.route("/bed-change/<username>", methods=["POST"])
+@bp_bed_change.route("/bed-change", methods=["POST"])
 @permission("api.bed.add")
 async def bp_add_user(request, username):
     user = await Userinfo.get_userinfo(username)
