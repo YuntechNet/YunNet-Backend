@@ -96,15 +96,19 @@ class Ip:
 
         """
         bed_regex = "^[A-Za-z][0-9]{4}-[0-9]$"
-        if re.search(bed_regex, bed) is None:
+        portal_regex = "^[A-Za-z][0-9]{3,4}$"
+        building_regex = "^[A-Za-z]$"
+        if re.search(bed_regex, bed) is not None:
+            sql = "SELECT * FROM `iptable` WHERE `description` LIKE CONCAT('%%',%s)"
+        elif re.search(portal_regex, bed) is not None:
+            sql = "SELECT * FROM `iptable` WHERE `description` LIKE CONCAT(%s,'%%')"
+        elif re.search(building_regex, bed) is not None:
+            sql = "SELECT * FROM `iptable` WHERE `description` LIKE CONCAT(%s,'%%')"
+        else:
             return None
+
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
-                sql = (
-                    "SELECT * "
-                    "FROM `iptable`"
-                    "WHERE `description` LIKE CONCAT('%%',%s) "
-                )
                 para_input = bed
                 await cur.execute(sql, para_input)
                 data = await cur.fetchall()
