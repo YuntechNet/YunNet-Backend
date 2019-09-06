@@ -38,7 +38,7 @@ class User:
         return affected
 
     @staticmethod
-    async def add_user(username, nick, department="", back_mail="", note=""):
+    async def add_user(username, nick, department="", back_mail=None, note=None):
         """Add new user.
 
         Args:
@@ -57,7 +57,7 @@ class User:
                 para_input = (username, nick, department, back_mail, note)
                 affected = await cur.execute(sql, para_input)
                 await conn.commit()
-        return affected
+                return cur.lastrowid
 
     @staticmethod
     async def get_user_id(username: str):

@@ -5,6 +5,7 @@ from Base import messages
 from Decorators import permission
 from Query import User
 from Query.bed import Bed
+from Query.group import Group
 from Query.ip import Ip
 from Query.userinfo import Userinfo
 
@@ -115,6 +116,8 @@ class add_user_doc(api.API):
         department = doc.String("User's department")
         back_mail = doc.String("User's backup mail")
         note = doc.String("Additional note")
+        bed = doc.String("User's bed")
+        is_panda = doc.Boolean("Is user panda")
 
     consumes = doc.JsonBody(vars(consumes))
 
@@ -142,7 +145,8 @@ class add_user_doc(api.API):
 @add_user_doc
 @bp_bed_change.route("/bed-change", methods=["POST"])
 @permission("api.bed.add")
-async def bp_add_user(request, username):
+async def bp_add_user(request):
+    username = request.json["username"]
     user = await Userinfo.get_userinfo(username)
     if user is not None:
         return messages.USER_ALREADY_EXIST
@@ -152,8 +156,22 @@ async def bp_add_user(request, username):
     department = request.json["department"]
     back_mail = request.json["back_mail"]
     note = request.json["note"]
+    bed = request.json["bed"]
+    is_panda = request.json["is_panda"]
 
-    affected = await User.add_user(username, nick, department, back_mail, note)
-    if affected == 0:
-        return messages.INTERNAL_SERVER_ERROR
+    # add user
+    uid = await User.add_user(username, nick, department, back_mail, note)
+    # assign ip
+    ip = await Ip.get_ip_by_bed(bed)
+    if len(ip) != 1:
+        return messages.BAD_REQUEST
+    ip = ip[0]["ip"]
+    await Ip.assign_user(ip, uid)
+    # add group
+    await Group.add_user_group(username, 2)
+    await Group.add_user_group(username, 5)
+    if is_panda == True:
+        await Ip.set_ip_type(ip, 2)
+        await Group.add_user_group(username, 7)
+
     return messages.OPERATION_SUCCESS

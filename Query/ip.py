@@ -27,6 +27,16 @@ class Ip:
     #
     #     return dicts
     @staticmethod
+    async def set_ip_type(ip, type):
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                sql = "UPDATE `iptable` SET `ip_type_id` = %s WHERE `ip` = %s "
+                para_input = (type, ip)
+                await cur.execute(sql, para_input)
+                await conn.commit()
+                return True
+
+    @staticmethod
     async def assign_user(ip, uid):
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
