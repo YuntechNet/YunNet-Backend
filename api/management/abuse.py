@@ -72,7 +72,7 @@ class abuse_doc(api.API):
 
 @abuse_doc
 @bp_abuse.route("/abuse/<ip>", methods=["PUT"], strict_slashes=True)
-@permission("api.lock.add")
+@permission("api.ip.lock.add")
 async def bp_abuse_put(request: Request, ip):
     try:
         title = request.json["title"]
@@ -170,7 +170,7 @@ class unlock_abuse_doc(api.API):
 
 @unlock_abuse_doc
 @bp_abuse.route("/abuse/<ip>", methods=["DELETE"], strict_slashes=True)
-@permission("api.lock.edit")
+@permission("api.ip.lock.edit")
 async def bp_abuse_unlock(request: Request, ip):
     try:
 
