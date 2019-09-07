@@ -47,15 +47,9 @@ class change_bed_doc(api.API):
 
 
 @change_bed_doc
-<<<<<<< HEAD
-@bp_bed_change.route("/", methods=["POST"])
-@permission("api.bed.exchange")
-async def change_bed(request):
-=======
 @bp_bed_change.route("/bed-change", methods=["PUT"])
 @permission("api.bed.exchange")
 async def exchange_bed(request):
->>>>>>> aa1191e006fe1ddcad46e6b54be1886d333222c0
     source_bed = request.json["source_bed"]
     dest_bed = request.json["dest_bed"]
     # for validate uid
