@@ -13,7 +13,7 @@ user_import = Blueprint("management-user-import")
 
 @doc.consumes(doc.File, location="formData", required=True)
 @user_import.route("/import", methods=["POST"], strict_slashes=True)
-@permission("")
+@permission("api.bed.import")
 async def bp_bulk_import_file_upload(request):
     csv = request.files["file"][0].body
     create_task(bulk_import(csv, request.app.config.PASSWORD_SALT))

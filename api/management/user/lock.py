@@ -47,7 +47,7 @@ class user_ip_lock_list_doc(api.API):
 
 @user_ip_lock_list_doc
 @bp_lock.route("/<ip>/lock", methods=["GET"])
-@permission("system.dormitory.query.query")
+@permission("api.query.lock")
 async def bp_user_ip_lock_list(request, ip):
     lock_log = await Lock.get_lock(ip)
 

@@ -48,7 +48,7 @@ class user_ip_get_own_ip_doc(api.API):
 
 @user_ip_get_own_ip_doc
 @bp_ip.route("/ip", methods=["GET"])
-@permission("index.userinfo.view")
+@permission("api.ip.get")
 async def bp_ip_get_owned_ip(request, username):
     ips = await Ip.get_user_own_ip(username)
 

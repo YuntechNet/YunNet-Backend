@@ -50,7 +50,7 @@ class user_ip_lock_list_doc(api.API):
 
 @user_ip_lock_list_doc
 @bp_lock.route("/<ip>/lock", methods=["GET"])
-@permission("index.lock_table.view")
+@permission("api.ip.lock.get")
 async def bp_user_ip_lock_list(request, username, ip):
     username = request["username"]
     ips = await Ip.get_user_own_ip(username)
