@@ -49,7 +49,7 @@ class user_info_doc(api.API):
 
 @user_info_doc
 @bp_user.route("/", methods=["GET"])
-@permission("api.user.info")
+@permission("api.user.info.get")
 async def bp_user_info(request, username):
     username = request["username"]
 
