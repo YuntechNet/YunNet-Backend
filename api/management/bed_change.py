@@ -97,8 +97,8 @@ class delete_user_doc(api.API):
 @permission("api.bed.leave")
 async def bp_delete(request, username):
     user = await Userinfo.get_userinfo(username)
-    if user is not None:
-        return messages.USER_NOT_EXIST
+    if user is None:
+        return messages.USER_DOES_NOT_EXIST
 
     await User.delete_user(username)
 
@@ -148,8 +148,9 @@ class add_user_doc(api.API):
 async def bp_add_user(request):
     username = request.json["username"]
     user = await Userinfo.get_userinfo(username)
+
     if user is not None:
-        return messages.USER_ALREADY_EXIST
+        return messages.USER_ALREADY_EXISTS
 
     username = request.json["username"]
     nick = request.json["nick"]
@@ -163,7 +164,7 @@ async def bp_add_user(request):
     uid = await User.add_user(username, nick, department, back_mail, note)
     # assign ip
     ip = await Ip.get_ip_by_bed(bed)
-    if len(ip) != 1:
+    if ip is None or len(ip) != 1:
         return messages.BAD_REQUEST
     ip = ip[0]["ip"]
     await Ip.assign_user(ip, uid)

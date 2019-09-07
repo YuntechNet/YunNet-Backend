@@ -93,7 +93,7 @@ async def bp_user_query(request, query):
     group_list = []
 
     ip_regex = "^(?:(?:\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.){3}(?:\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$"
-    bed_regex = "^[A-Za-z][0-9]{4}-[0-9]$"
+    bed_regex = "^[A-Za-z][0-9]{3,4}-[0-9]$"
     portal_regex = "^[A-Za-z][0-9]{3,4}$"
     building_regex = "^[A-Za-z]$"
 
