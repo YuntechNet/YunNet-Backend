@@ -94,6 +94,8 @@ async def bp_user_query(request, query):
 
     ip_regex = "^(?:(?:\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.){3}(?:\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$"
     bed_regex = "^[A-Za-z][0-9]{4}-[0-9]$"
+    portal_regex = "^[A-Za-z][0-9]{3,4}$"
+    building_regex = "^[A-Za-z]$"
 
     if re.search(ip_regex, query) is not None:
         mode = "ip"
@@ -113,6 +115,15 @@ async def bp_user_query(request, query):
 
         resp["user"] = user if user is not None else []
         resp["ip"] = ip if ip is not None else []
+    elif re.search(building_regex,query.upper()) is not None:
+        mode = "building"
+        ip_list = await Ip.get_ip_by_bed(query)
+        resp["ip"] = ip_list
+
+    elif re.search(portal_regex, query.upper()) is not None:
+        mode = "portal"
+        ip_list = await Ip.get_ip_by_bed(query)
+        resp["ip"] = ip_list
 
     elif re.search(bed_regex, query.upper()) is not None:
         mode = "bed"

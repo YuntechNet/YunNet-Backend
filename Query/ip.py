@@ -27,6 +27,16 @@ class Ip:
     #
     #     return dicts
     @staticmethod
+    async def set_ip_type(ip, type):
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                sql = "UPDATE `iptable` SET `ip_type_id` = %s WHERE `ip` = %s "
+                para_input = (type, ip)
+                await cur.execute(sql, para_input)
+                await conn.commit()
+                return True
+
+    @staticmethod
     async def assign_user(ip, uid):
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
@@ -96,15 +106,19 @@ class Ip:
 
         """
         bed_regex = "^[A-Za-z][0-9]{4}-[0-9]$"
-        if re.search(bed_regex, bed) is None:
+        portal_regex = "^[A-Za-z][0-9]{3,4}$"
+        building_regex = "^[A-Za-z]$"
+        if re.search(bed_regex, bed) is not None:
+            sql = "SELECT * FROM `iptable` WHERE `description` LIKE CONCAT('%%',%s)"
+        elif re.search(portal_regex, bed) is not None:
+            sql = "SELECT * FROM `iptable` WHERE `description` LIKE CONCAT(%s,'%%')"
+        elif re.search(building_regex, bed) is not None:
+            sql = "SELECT * FROM `iptable` WHERE `description` LIKE CONCAT(%s,'%%')"
+        else:
             return None
+
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
-                sql = (
-                    "SELECT * "
-                    "FROM `iptable`"
-                    "WHERE `description` LIKE CONCAT('%%',%s) "
-                )
                 para_input = bed
                 await cur.execute(sql, para_input)
                 data = await cur.fetchall()
