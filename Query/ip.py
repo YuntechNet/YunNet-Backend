@@ -105,7 +105,7 @@ class Ip:
             }
 
         """
-        bed_regex = "^[A-Za-z][0-9]{4}-[0-9]$"
+        bed_regex = "^[A-Za-z][0-9]{3,4}-[0-9]$"
         portal_regex = "^[A-Za-z][0-9]{3,4}$"
         building_regex = "^[A-Za-z]$"
         if re.search(bed_regex, bed) is not None:
