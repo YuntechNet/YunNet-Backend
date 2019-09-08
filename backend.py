@@ -120,8 +120,10 @@ async def response_middleware(request, response):
         import json
         body = request.json
         if body is not None:
-            if "password" in body:
-                body.pop("password")
+            keys = "password", "old_password", "new_password"
+            for key in keys:
+                if key in body:
+                    body.pop(key)
             body = json.dumps(body)
     except:
         logger.info(traceback.format_exc())
