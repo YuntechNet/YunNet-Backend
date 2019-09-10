@@ -27,11 +27,11 @@ class Ip:
     #
     #     return dicts
     @staticmethod
-    async def set_ip_type(ip, type):
+    async def set_ip_type(ip, ip_type):
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
                 sql = "UPDATE `iptable` SET `ip_type_id` = %s WHERE `ip` = %s "
-                para_input = (type, ip)
+                para_input = (ip_type, ip)
                 await cur.execute(sql, para_input)
                 await conn.commit()
                 return True
@@ -74,6 +74,41 @@ class Ip:
             async with conn.cursor(DictCursor) as cur:
                 sql = "SELECT * FROM `iptable` WHERE `ip` = %s "
                 para_input = ip
+                await cur.execute(sql, para_input)
+                data = await cur.fetchone()
+
+                if data is None:
+                    return None
+
+                return data
+
+    @staticmethod
+    async def get_ip_by_mac(mac):
+        """
+
+        Args:
+            id:ip address
+
+        Returns:dict
+            {
+                "ip": str,
+                "switch_id": int,
+                "ip_type_id": int,
+                "mac": str,
+                "port": int,
+                "port_type": str,
+                "is_updated": bool,
+                "uid": int,
+                "gid": int,
+                "description": str,
+                "lock_id": int,
+            }
+
+        """
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                sql = "SELECT * FROM `iptable` WHERE `mac` like %s "
+                para_input = mac
                 await cur.execute(sql, para_input)
                 data = await cur.fetchone()
 

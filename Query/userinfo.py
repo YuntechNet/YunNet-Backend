@@ -71,6 +71,12 @@ class Userinfo:
                         "INNER JOIN `iptable` AS i "
                         "ON u.uid = i.uid WHERE `ip` = %s"
                     )
+                elif mode == "mac":
+                    sql = (
+                        "SELECT u.* FROM `user` AS u "
+                        "INNER JOIN `iptable` AS i "
+                        "ON u.uid = i.uid WHERE `mac` LIKE %s"
+                    )
                 elif mode == "bed":
                     sql = (
                         "SELECT u.* FROM `user` AS u "

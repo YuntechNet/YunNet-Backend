@@ -71,7 +71,7 @@ class user_query_doc(api.API):
 async def bp_user_query(request, query):
     # TODO(biboy1999): will refactor later
 
-    def ip_list_wraper(ip_list):
+    def ip_list_wrapper(ip_list):
         for ip in ip_list:
             ip.pop("uid")
             ip.pop("gid")
@@ -93,9 +93,10 @@ async def bp_user_query(request, query):
     group_list = []
 
     ip_regex = "^(?:(?:\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.){3}(?:\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$"
-    bed_regex = "^[A-Za-z][0-9]{3,4}-[0-9]$"
-    portal_regex = "^[A-Za-z][0-9]{3,4}$"
+    mac_regex = "^[0-9A-Fa-f]{12}$"
     building_regex = "^[A-Za-z]$"
+    portal_regex = "^[A-Za-z][0-9]{3,4}$"
+    bed_regex = "^[A-Za-z][0-9]{3,4}-[0-9]$"
 
     if re.search(ip_regex, query) is not None:
         mode = "ip"
@@ -111,11 +112,30 @@ async def bp_user_query(request, query):
 
         ip = await Ip.get_ip_by_id(query)
         if ip is not None:
-            ip = ip_list_wraper([ip])
+            ip = ip_list_wrapper([ip])
 
         resp["user"] = user if user is not None else []
         resp["ip"] = ip if ip is not None else []
-    elif re.search(building_regex,query.upper()) is not None:
+
+    elif re.search(mac_regex, query.upper()) is not None:
+        mode = "mac"
+        user = await Userinfo.get_fullinfo(query, mode)
+        if user is not None:
+            user.pop("password_hash")
+
+            group = await Group.get_user_group(user["username"])
+            for g in group:
+                group_list.append(g["description"])
+            user["group"] = ([], group_list)[group_list is not None]
+
+        ip = await Ip.get_ip_by_mac(query)
+        if ip is not None:
+            ip = ip_list_wrapper([ip])
+
+        resp["user"] = user if user is not None else []
+        resp["ip"] = ip if ip is not None else []
+
+    elif re.search(building_regex, query.upper()) is not None:
         mode = "building"
         ip_list = await Ip.get_ip_by_bed(query)
         resp["ip"] = ip_list
@@ -137,11 +157,12 @@ async def bp_user_query(request, query):
 
         ip_list = await Ip.get_user_own_ip(user["username"])
         if ip_list is not None:
-            ip_list = ip_list_wraper(ip_list)
+            ip_list = ip_list_wrapper(ip_list)
 
         group = await Group.get_user_group(user["username"])
         for g in group:
             group_list.append(g["description"])
+
         user["group"] = group_list
         resp["user"] = user
         resp["ip"] = ip_list
@@ -155,7 +176,7 @@ async def bp_user_query(request, query):
 
             ip_list = await Ip.get_user_own_ip(user["username"])
             if ip_list is not None:
-                ip_list = ip_list_wraper(ip_list)
+                ip_list = ip_list_wrapper(ip_list)
 
             group = await Group.get_user_group(user["username"])
             for g in group:
