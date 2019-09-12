@@ -74,7 +74,7 @@ class User:
                 await cur.execute(sql, para_input)
                 data = await cur.fetchone()
                 await conn.commit()
-                if len(data) == 0:
+                if data is None or len(data) == 0:
                     return None
 
         return data["uid"]

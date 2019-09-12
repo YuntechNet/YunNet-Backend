@@ -78,6 +78,8 @@ async def bp_user_forgot_password(request):
 
     # Insert to database
     uid = await User.get_user_id(username)
+    if uid is None:
+        return messages.USER_DOES_NOT_EXIST
     affect_row = await Token.add_token(uid, recover_code)
     if not affect_row:
         return messages.INTERNAL_SERVER_ERROR
