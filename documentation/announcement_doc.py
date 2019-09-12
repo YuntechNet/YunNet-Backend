@@ -1,5 +1,7 @@
 from sanic_openapi import api, doc
 
+from documentation.universal_model import Message
+
 
 class AnnouncementList:
     post_id = doc.String("Post id")
@@ -12,12 +14,9 @@ class AnnouncementPost:
     content = doc.String("Content, may contain html")
 
 
-class ErrorMessage:
-    message = doc.String("Error message")
-
-
 class AnnouncementGetListDoc(api.API):
     summary = "Get announcement list."
+
     class SuccessResp:
         code = 200
         description = "On success request"
@@ -28,13 +27,14 @@ class AnnouncementGetListDoc(api.API):
         code = 500
         description = "On failed request"
 
-        model = ErrorMessage
+        model = Message
 
     response = [SuccessResp, FailResp]
 
 
 class AnnouncementGetPostDoc(api.API):
     summary = "Get announcement post by post_id."
+
     class SuccessResp:
         code = 200
         description = "On success request"
@@ -45,6 +45,6 @@ class AnnouncementGetPostDoc(api.API):
         code = 500
         description = "On failed request"
 
-        model = ErrorMessage
+        model = Message
 
     response = [SuccessResp, FailResp]
