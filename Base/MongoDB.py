@@ -25,7 +25,7 @@ class MongoDB:
             del(MongoDB._client)
 
     @staticmethod
-    async def log_endpoint_access(request, response):
+    def _generate_endoint_access_entry(request, response):
         real_ip = request.ip
         if "X-Forwarded-For" in request.headers:
             real_ip = request.headers["X-Forwarded-For"]
@@ -39,7 +39,7 @@ class MongoDB:
             auth = request.headers["Authorization"].split()
             if auth[0] == "Bearer":
                 try:
-                    jwt_payload = jwt_decode(auth[1], config.JWT["jwtSecret"])
+                    jwt_payload = jwt_decode(request.app.config.JWT["jwtSecret"])
                     username = jwt_payload["username"]
                 except:
                     pass
@@ -71,6 +71,10 @@ class MongoDB:
             "request_body": request.json,
             "response_body": response.json,
         }
+        return log_entry
+    @staticmethod
+    async def log_endpoint_access(request, response):
+        log_entry = MongoDB._generate_endoint_access_entry(request,response)
         # get collection
         yunnet_db = MongoDB._client["yunnet"]
         log_collection = yunnet_db["log"]
