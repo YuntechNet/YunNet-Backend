@@ -29,7 +29,7 @@ class Bed:
                     "FROM `user` AS u "
                     "INNER JOIN `iptable` AS i ON i.uid = u.uid "
                     "WHERE u.username = %s "
-                    "AND (i.ip_type_id = 0 OR i.ip_type_id = 1)"
+                    "AND (i.ip_type_id = 2 OR i.ip_type_id = 1)"
                 )
                 para_input = username
                 await cur.execute(sql, para_input)
