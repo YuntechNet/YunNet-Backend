@@ -43,8 +43,8 @@ def _generate_endoint_access_entry(request, response, jwt_secret):
         "username": username,
         "endpoint": request.path,
         "query_string": request.query_string,
-        "request_body": request.json,
-        "response_body": response.json,
+        "request_body": body,
+        "response_body": response.body,
     }
     return log_entry
 
