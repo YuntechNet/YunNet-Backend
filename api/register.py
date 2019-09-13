@@ -9,6 +9,7 @@ from hashlib import sha256
 from time import time
 
 from Base import messages, SMTP, big5_encode
+from Base.MongoDB.actions import log_register
 from Query.user import User
 from Query.bed import Bed
 from Query.group import Group
@@ -78,38 +79,15 @@ async def bp_register(request):
         return messages.ALREADY_REGISTERED
 
     if user_bed["bed"] == bed:
-        # Activation mail content
-        content = (
-            "請點擊下方連結驗證您的帳號：\n"
-            "https://yunnet.yuntech.edu.tw/#/register_verify/{0}\n"
-            "\n"
-            "Please click following link to activate your account:\n"
-            "https://yunnet.yuntech.edu.tw/#/register_verify/{0}\n"
-            "\n"
-            "連結有效時間為一小時."
-            "Verify link will expire in 1 hour. \n"
-            "\n"
-            "如果連結過期,請重新申請."
-            "If link expire, Please re-register"
-            "\n"
-            "如須設定網路教學，請點擊下方連結（中文版）：\n"
-            "MISSING_URL\n"
-            "\n"
-            "If you need instruction on configuring internet, please click the following link (English):\n"
-            "MISSING_URL\n"
-        )
         # Token creation
         hexdigest = username + repr(time())
         hexdigest = sha256(hexdigest.encode()).hexdigest()
         activation_code = username + "_" + hexdigest
 
         # Send mail
-        mail = MIMEText(content.format(activation_code), _charset="big5")
-        mail["From"] = SMTP.sender
-        mail["To"] = username + "@yuntech.edu.tw"
-        mail["Subject"] = "YunNet Verify Email"
         try:
-            await SMTP.send_message(mail)
+            mailaddr = "{0}@yuntech.edu.tw".format(username)
+            await SMTP.send_verify_mail(mailaddr, activation_code)
         except SMTPRecipientsRefused as e:
             return json({"message": e.recipients[0].message}, 500)
 
@@ -128,5 +106,5 @@ async def bp_register(request):
 
     else:
         return messages.REGISTER_FAILED
-
+    await log_register(username)
     return messages.REGISTER_SUCCESS

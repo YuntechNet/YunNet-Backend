@@ -9,6 +9,7 @@ from .register import bp_login
 from .teapot import bp_teapot
 from .verify_mail import bp_verify_mail
 from .forgot_password import bp_forgot_passowrd
+from .log import bp_log
 
 api = Blueprint.group(
     user,
@@ -19,5 +20,6 @@ api = Blueprint.group(
     bp_verify_mail,
     bp_teapot,
     bp_forgot_passowrd,
+    bp_log,
     url_prefix="/api",
 )

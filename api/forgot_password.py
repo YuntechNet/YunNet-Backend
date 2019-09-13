@@ -3,6 +3,7 @@ from time import time
 from hashlib import sha256
 
 from sanic import Blueprint
+from sanic.response import json
 from sanic_openapi import doc, api
 from email.mime.text import MIMEText
 from aiosmtplib.errors import SMTPRecipientsRefused
@@ -51,22 +52,7 @@ class forgot_password_doc(api.API):
 async def bp_user_forgot_password(request):
     username = request.json["username"]
     # TODO recover jwt token
-    content = (
-        "請點擊下方連結重置您的密碼：\n"
-        "https://yunnet.yuntech.edu.tw/#/set_password/{0}\n"
-        "\n"
-        "\n"
-        "Please click following link to reset your password:\n"
-        "https://yunnet.yuntech.edu.tw/#/set_password/{0}\n"
-        "\n"
-        "\n"
-        "連結有效時間為一小時."
-        "Verify link will expire in 1 hour. \n"
-        "\n"
-        "如果連結過期,請重新申請."
-        "If link expire, Please re-apply"
-        "\n"
-    )
+    
     # Token creation
     hexdigest = username + repr(time())
     hexdigest = sha256(hexdigest.encode()).hexdigest()
@@ -85,14 +71,11 @@ async def bp_user_forgot_password(request):
         return messages.INTERNAL_SERVER_ERROR
 
     # Send mail
-    mail = MIMEText(content.format(recover_code), _charset="big5")
-    mail["From"] = SMTP.sender
-    mail["To"] = username + "@yuntech.edu.tw"
-    mail["Subject"] = "YunNet Password Reset"
     try:
-        await SMTP.send_message(mail)
-    except SMTPRecipientsRefused:
-        return messages.MAIL_REFUSED
+        mailaddr = "{0}@yuntech.edu.tw".format(username)
+        await SMTP.send_recovery_mail(mailaddr, recover_code)
+    except SMTPRecipientsRefused as e:
+        return json({"message": e.recipients[0].message}, 500)
     return messages.OPERATION_SUCCESS
 
 

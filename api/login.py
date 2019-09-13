@@ -6,6 +6,7 @@ from sanic_openapi import doc, api
 from sanic_openapi.doc import JsonBody
 
 from Base import jwt_payload
+from Base.MongoDB.actions import log_login
 from Query.group import Group
 from Query.user import User
 from Query.permission import Permission
@@ -95,5 +96,6 @@ async def bp_user_login(request):
         config.JWT["algorithm"]
     ).decode("utf-8")
 
+    await log_login(username)
     resp = json({"username": username, "token": token}, 200)
     return resp

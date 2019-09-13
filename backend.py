@@ -1,5 +1,7 @@
 import asyncio
 from BackgroundJobs import switch_update
+from Base import MongoDB
+from Base.MongoDB.endpoint_access import log_endpoint_access
 from Base import aiohttpSession, SMTP, SQLPool, messages
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
@@ -55,6 +57,7 @@ async def init(app, loop):
         # init mongo log
         if config.DEBUG_ENABLE_MONGO or (not config.DEBUG):
             logger.info("Initializing MongoDB...")
+            await MongoDB.init(config.MONGODB_URI)
             app.mongo = SimpleNamespace()
             app.mongo.motor_client = AsyncIOMotorClient(config.MONGODB_URI)
             app.mongo.log_db = app.mongo.motor_client["yunnet"]
@@ -99,66 +102,8 @@ async def request_middleware(request):
 @app.middleware("response")
 async def response_middleware(request, response):
     response.headers["X-XSS-Protection"] = "1; mode=block"
-    real_ip: str = None
-    username: str = None
-    # Request.ip
-    if "X-Forwarded-For" in request.headers:
-        real_ip = request.headers["X-Forwarded-For"]
-    else:
-        real_ip = request.ip
-    if "Authorization" in request.headers:
-        auth = request.headers["Authorization"].split()
-        if auth[0] == "Bearer":
-            try:
-                jwt_payload = jwt.decode(auth[1], config.JWT["jwtSecret"])
-                username = jwt_payload["username"]
-            except:
-                pass
-    timenow = datetime.datetime.now()
-    body = None
-    try:
-        import json
-        body = request.json
-        if body is not None:
-            keys = "password", "old_password", "new_password"
-            for key in keys:
-                if key in body:
-                    body.pop(key)
-            body = json.dumps(body)
-    except:
-        logger.info(traceback.format_exc())
-        body = request.body.decode("utf-8")
-
-    # log_entry = {
-    #     "timestamp": timenow,
-    #     "unix_time": time.mktime(timenow.timetuple()),
-    #     "method": request.method,
-    #     "ip": real_ip,
-    #     "username": username,
-    #     "endpoint": request.path,
-    #     "query_string": request.query_string,
-    #     "body": body,
-    #     "http_status": response.status,
-    # }
-    logger.info(body)
-    if config.DEBUG_ENABLE_MONGO or not config.DEBUG:
-        session = None
-        if "Authorization" in request.headers:
-            session = request.headers["Authorization"]
-        log_entry = {
-            "timestamp": timenow,
-            "unix_time": time.mktime(timenow.timetuple()),
-            "method": request.method,
-            "session": session,
-            "ip": real_ip,
-            "username": username,
-            "endpoint": request.path,
-            "query_string": request.query_string,
-            "body": body,
-            "http_status": response.status,
-        }
-        log_collection = request.app.mongo.log_collection
-        await log_collection.insert_one(log_entry)
+    secret = app.config.JWT["jwtSecret"]
+    await log_endpoint_access(request, response, secret)
 
 
 @app.route("favicon.ico")
