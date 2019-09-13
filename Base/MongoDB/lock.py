@@ -19,7 +19,7 @@ async def log_lock(ip, current_ip_owner, operator, lock_until):
 
 async def log_unlock(ip, owner, operator, lock_until):
     log_entry = {
-        "type": "lock",
+        "type": "unlock",
         "ip": ip,
         "owner": owner,
         "operator": operator,

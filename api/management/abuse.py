@@ -14,6 +14,7 @@ from Query import Lock, User
 from Decorators import permission
 from BackgroundJobs.switch_update import do_switch_update
 from Query.ip import Ip
+from Base.MongoDB.lock import log_lock, log_unlock
 
 bp_abuse = Blueprint("management-abuse")
 
@@ -101,17 +102,10 @@ async def bp_abuse_put(request: Request, ip):
         return messages.BAD_REQUEST
 
     await Lock.set_lock(
-        ip,
-        0,
-        datetime.now(),
-        lock_until,
-        title,
-        description,
-        uid,
-        gid,
-        locked_by,
+        ip, 0, datetime.now(), lock_until, title, description, uid, gid, locked_by
     )
     app_config: config = request.app.config
+    await log_lock(ip, uid, locked_by, lock_until)
     if not no_update:
         asyncio.create_task(do_switch_update(app_config.MAC_UPDATER_ENDPOINT, True))
     return messages.ACCEPTED
@@ -179,12 +173,20 @@ async def bp_abuse_unlock(request: Request, ip):
             datetime.strptime(date, "%Y-%m-%d")
             await Lock.unlock(ip, date)
         else:
+            date = datetime.now()
             await Lock.unlock(ip)
 
         app_config: config = request.app.config
         asyncio.create_task(do_switch_update(app_config.MAC_UPDATER_ENDPOINT, True))
-        return messages.ACCEPTED
 
+        unlocked_by = await User.get_user_id(request["username"])
+
+        ip_data = await Ip.get_ip_by_id(ip)
+        uid = ip_data["uid"]
+        gid = ip_data["gid"]
+
+        await log_unlock(ip, uid, unlocked_by, date)
+        return messages.ACCEPTED
     except Exception as e:
         logger.debug(e.with_traceback())
         return messages.BAD_REQUEST
