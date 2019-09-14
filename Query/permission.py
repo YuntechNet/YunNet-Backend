@@ -28,7 +28,7 @@ class Permission:
                 para_input = (username, pstr)
                 await cur.execute(sql, para_input)
                 out = await cur.fetchall()
-                if out[0]:
+                if out[0][0] != 1:
                     return True
                 else:
                     return False
