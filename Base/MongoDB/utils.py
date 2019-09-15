@@ -1,3 +1,5 @@
+from dateutil.tz import tzlocal
+
 from bson import ObjectId
 
 def _process_result(result):
@@ -6,5 +8,7 @@ def _process_result(result):
         oid: ObjectId = entry["_id"]
         entry.pop("_id")
         entry["id"] = str(oid)
-        entry["date"] = oid.generation_time.strftime("%Y-%m-%d %H:%M:%S")
+        generation_time_utc = oid.generation_time
+        generation_time = generation_time_utc.astimezone(tz=None)
+        entry["date"] = generation_time.strftime("%Y-%m-%d %H:%M:%S")
     return ret
