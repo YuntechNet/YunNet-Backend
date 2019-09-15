@@ -30,6 +30,14 @@ async def log_activate(username):
     log_collection = yunnet_db["actions"]
     await log_collection.insert_one(log_entry)
 
+async def log_change_password(username):
+    log_entry = {
+        "username": username,
+        "action": "change_password"
+    }
+    yunnet_db = MongoDB._client["yunnet"]
+    log_collection = yunnet_db["actions"]
+    await log_collection.insert_one(log_entry)
 
 async def query_actions(username, length=100):
     yunnet_db = MongoDB._client["yunnet"]

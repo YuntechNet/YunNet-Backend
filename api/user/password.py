@@ -4,6 +4,7 @@ from sanic_openapi import doc, api
 from hashlib import sha256
 
 from Base import messages
+from Base.MongoDB.actions import log_change_password
 from Decorators import permission
 from Query import User
 
@@ -72,6 +73,7 @@ async def bp_user_change_password(request, username):
         return messages.PASSWORD_DOES_NOT_MATCH
 
     if await User.set_password(username, new_passowrd_hashed):
+        await log_change_password(username)
         return messages.OPERATION_SUCCESS
     else:
         return messages.INTERNAL_SERVER_ERROR
