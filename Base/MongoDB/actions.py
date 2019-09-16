@@ -39,9 +39,9 @@ async def log_change_password(username):
     log_collection = yunnet_db["actions"]
     await log_collection.insert_one(log_entry)
 
-async def query_actions(username, length=100):
+async def query_actions(username,skip=0, length=100):
     yunnet_db = MongoDB._client["yunnet"]
     log_collection = yunnet_db["actions"]
-    cursor = log_collection.find({"username":  username})
+    cursor = log_collection.find({"username":  username}, skip=skip, sort=[("_id", -1)])
     result = await cursor.to_list(length=length)
     return _process_result(result)
