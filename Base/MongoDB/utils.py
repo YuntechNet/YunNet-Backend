@@ -1,5 +1,3 @@
-from dateutil.tz import tzlocal
-
 from bson import ObjectId
 
 def _process_result(result):
