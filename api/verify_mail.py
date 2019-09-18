@@ -21,7 +21,7 @@ async def verify_mail(request, token):
         return messages.INVALID_TOKEN
 
     # token only live 1 hour
-    delta: timedelta = datetime.now() - db_token["timestamp"]
+    delta: timedelta = datetime.utcnow() - db_token["timestamp"]
     if delta > timedelta(hours=1):
         await Token.delete_token(token)
         return messages.TOKEN_EXPIRED

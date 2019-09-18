@@ -122,7 +122,7 @@ async def bp_user_forgot_password_verify(request, token):
         return messages.INVALID_TOKEN
 
     # token only live 1 hour
-    delta = datetime.now() - db_token["timestamp"]
+    delta = datetime.utcnow() - db_token["timestamp"]
     if delta > timedelta(hours=1):
         await Token.delete_token(token)
         return messages.TOKEN_EXPIRED
