@@ -1,4 +1,5 @@
 from sanic.response import json
+from json import dumps
 from sanic import Blueprint
 
 from Query.announcement import Announcement
@@ -14,7 +15,7 @@ bp_announcement = Blueprint("announcement")
 @bp_announcement.route("/announcement", methods=["GET"])
 async def bp_announcement_get_list(request):
     resp = await Announcement.get_announcement()
-    return json(resp)
+    return json(resp, default=str)
 
 
 @AnnouncementGetPostDoc

@@ -7,7 +7,7 @@ from Base import SQLPool
 
 
 class Announcement:
-
+    # TODO timestamp, top 10
     @staticmethod
     async def get_announcement():
         """get announcement list
@@ -26,10 +26,19 @@ class Announcement:
 
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
-                sql = "SELECT `announcement_id`,`title`, `uid` FROM `announcement`"
+                sql = (
+                    "SELECT `announcement_id`, `title`, `content`, `create_datetime`, `uid`, `top` "
+                    "FROM announcement "
+                    "WHERE `is_deleted` = 0 AND `top` = 1 "
+                    "UNION "
+                    "SELECT `announcement_id`, `title`, `content`, `create_datetime`, `uid`, `top` "
+                    "FROM `announcement` "
+                    "WHERE `is_deleted` = 0 "
+                    "ORDER BY `create_datetime` DESC "
+                    "LIMIT 10"
+                )
                 await cur.execute(sql)
                 data = await cur.fetchall()
-                await conn.commit()
 
         return data
 
@@ -51,11 +60,7 @@ class Announcement:
 
         async with SQLPool.acquire() as conn:
             async with conn.cursor(DictCursor) as cur:
-                sql = (
-                    "SELECT * "
-                    "FROM `announcement` "
-                    "WHERE announcement_id = %s"
-                )
+                sql = "SELECT * " "FROM `announcement` " "WHERE announcement_id = %s"
                 await cur.execute(sql, id)
                 await conn.commit()
                 data = await cur.fetchone()
