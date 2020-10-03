@@ -188,7 +188,7 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                     message = MIMEText(text, _charset="big5")
                 else:
                     subject += "Failed to update."
-                    message = MIMEText(payload, _charset="big5")
+                    message = MIMEText(str(payload), _charset="big5")
                 if SMTP.initialized:
                     message["From"] = SMTP.sender
                     message["To"] = SMTP.sender
