@@ -48,6 +48,17 @@ class Ip:
                 return True
 
     @staticmethod
+    async def assign_mac(ip, mac):
+        async with SQLPool.acquire() as conn:
+            async with conn.cursor(DictCursor) as cur:
+                sql = "UPDATE `iptable` SET `mac` = %s WHERE `ip` = %s "
+                para_input = (mac, ip)
+                await cur.execute(sql, para_input)
+                await conn.commit()
+
+                return True
+
+    @staticmethod
     async def get_ip_by_id(ip):
         """
 
