@@ -62,10 +62,14 @@ async def exchange_bed(request):
     if source_ip is None or dest_ip is None:
         return messages.BAD_REQUEST
     source_uid = source_ip[0]["uid"]
+    source_mac = source_ip[0]["mac"]
     dest_uid = dest_ip[0]["uid"]
+    dest_mac = dest_ip[0]["mac"]
 
     await Ip.assign_user(dest_ip[0]["ip"], source_uid)
+    await Ip.assign_mac(dest_ip[0]["mac"], source_mac)
     await Ip.assign_user(source_ip[0]["ip"], dest_uid)
+    await Ip.assign_mac(source_ip[0]["mac"], dest_mac)
 
     return messages.OPERATION_SUCCESS
 
