@@ -59,6 +59,8 @@ async def do_switch_update(api_endpoint: str, forced: bool=False):
                 panda_ip_query = "SELECT `ip` from `iptable` WHERE `ip_type_id` = '2'"
                 await cur.execute(panda_ip_query)
                 panda_ip_list = await cur.fetchall()
+                # because format is (('x.x.x.x',), ('x.x.x.x',), ...)
+                panda_ip_list = [item[0] for item in panda_ip_list]
             async with conn.cursor(DictCursor) as cur:
                 # panda step 2, set panda IP not update on 0AM and 7AM
                 panda_locked = False
