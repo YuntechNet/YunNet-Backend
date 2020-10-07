@@ -1,14 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.0.1
+-- version 5.0.2
 -- https://www.phpmyadmin.net/
 --
 -- 主機： db
--- 產生時間： 2019 年 08 月 27 日 08:32
+-- 產生時間： 2020 年 10 月 07 日 16:52
 -- 伺服器版本： 10.4.6-MariaDB-1:10.4.6+maria~bionic
--- PHP 版本： 7.2.19
+-- PHP 版本： 7.4.9
 
+SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -29,12 +29,13 @@ USE `YunNet`;
 --
 -- 資料表結構 `announcement`
 --
--- 建立時間： 2019 年 08 月 17 日 10:52
+-- 建立時間： 2020 年 09 月 01 日 20:35
 --
 
 DROP TABLE IF EXISTS `announcement`;
 CREATE TABLE `announcement` (
   `announcement_id` int(10) UNSIGNED NOT NULL,
+  `title` text COLLATE utf8_unicode_ci DEFAULT NULL,
   `content` longtext COLLATE utf8_unicode_ci DEFAULT NULL,
   `uid` int(10) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -44,7 +45,7 @@ CREATE TABLE `announcement` (
 --
 -- 資料表結構 `backup_mac`
 --
--- 建立時間： 2019 年 08 月 23 日 08:24
+-- 建立時間： 2020 年 09 月 01 日 20:35
 --
 
 DROP TABLE IF EXISTS `backup_mac`;
@@ -58,7 +59,7 @@ CREATE TABLE `backup_mac` (
 --
 -- 資料表結構 `bed`
 --
--- 建立時間： 2019 年 08 月 23 日 05:01
+-- 建立時間： 2020 年 09 月 01 日 20:35
 --
 
 DROP TABLE IF EXISTS `bed`;
@@ -74,8 +75,7 @@ CREATE TABLE `bed` (
 --
 -- 資料表結構 `group`
 --
--- 建立時間： 2019 年 08 月 17 日 10:52
--- 最後更新： 2019 年 08 月 23 日 08:21
+-- 建立時間： 2020 年 09 月 01 日 20:35
 --
 
 DROP TABLE IF EXISTS `group`;
@@ -90,7 +90,7 @@ CREATE TABLE `group` (
 --
 -- 資料表結構 `group_inherit`
 --
--- 建立時間： 2019 年 08 月 17 日 10:52
+-- 建立時間： 2020 年 09 月 01 日 20:35
 --
 
 DROP TABLE IF EXISTS `group_inherit`;
@@ -102,9 +102,23 @@ CREATE TABLE `group_inherit` (
 -- --------------------------------------------------------
 
 --
+-- 資料表結構 `group_managed_by`
+--
+-- 建立時間： 2020 年 09 月 01 日 20:35
+--
+
+DROP TABLE IF EXISTS `group_managed_by`;
+CREATE TABLE `group_managed_by` (
+  `gid` int(10) UNSIGNED NOT NULL,
+  `parent_gid` int(10) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- 資料表結構 `group_permission`
 --
--- 建立時間： 2019 年 08 月 17 日 10:52
+-- 建立時間： 2020 年 09 月 01 日 20:35
 --
 
 DROP TABLE IF EXISTS `group_permission`;
@@ -118,7 +132,8 @@ CREATE TABLE `group_permission` (
 --
 -- 資料表結構 `group_user`
 --
--- 建立時間： 2019 年 08 月 17 日 10:52
+-- 建立時間： 2020 年 09 月 01 日 20:35
+-- 最後更新： 2020 年 10 月 07 日 12:13
 --
 
 DROP TABLE IF EXISTS `group_user`;
@@ -132,12 +147,55 @@ CREATE TABLE `group_user` (
 --
 -- 資料表結構 `iptable`
 --
--- 建立時間： 2019 年 08 月 23 日 08:23
--- 最後更新： 2019 年 08 月 25 日 18:03
+-- 建立時間： 2020 年 09 月 01 日 20:35
+-- 最後更新： 2020 年 10 月 07 日 16:26
 --
 
 DROP TABLE IF EXISTS `iptable`;
 CREATE TABLE `iptable` (
+  `ip` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
+  `ip_type_id` int(11) UNSIGNED DEFAULT NULL,
+  `is_unlimited` tinyint(1) NOT NULL DEFAULT 0,
+  `switch_id` int(11) DEFAULT NULL,
+  `port` int(11) NOT NULL,
+  `port_type` int(11) NOT NULL,
+  `mac` varchar(18) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `is_updated` tinyint(1) NOT NULL DEFAULT 0,
+  `uid` int(11) UNSIGNED NOT NULL,
+  `gid` int(11) UNSIGNED NOT NULL,
+  `description` text COLLATE utf8_unicode_ci NOT NULL,
+  `lock_id` int(10) UNSIGNED DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- 觸發器 `iptable`
+--
+DROP TRIGGER IF EXISTS `status_update`;
+DELIMITER $$
+CREATE TRIGGER `status_update` BEFORE UPDATE ON `iptable` FOR EACH ROW BEGIN
+IF (new.is_unlimited = 1 AND old.is_updated = 1) THEN
+    SET new.is_updated = 0;
+END IF;
+IF (new.is_unlimited = 1) THEN
+    SET new.lock_id = null;
+END IF;
+IF (new.mac != old.mac OR new.lock_id != old.lock_id OR new.switch_id != old.switch_id OR old.port != new.port OR old.port_type != new.port_type ) THEN
+    SET new.is_updated = 0;
+END IF;
+END
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `iptable_test`
+--
+-- 建立時間： 2020 年 09 月 01 日 20:35
+--
+
+DROP TABLE IF EXISTS `iptable_test`;
+CREATE TABLE `iptable_test` (
   `ip` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
   `ip_type_id` int(11) UNSIGNED DEFAULT NULL,
   `is_unlimited` tinyint(1) NOT NULL DEFAULT 0,
@@ -157,8 +215,7 @@ CREATE TABLE `iptable` (
 --
 -- 資料表結構 `ip_type`
 --
--- 建立時間： 2019 年 08 月 17 日 10:52
--- 最後更新： 2019 年 08 月 23 日 05:27
+-- 建立時間： 2020 年 09 月 01 日 20:35
 --
 
 DROP TABLE IF EXISTS `ip_type`;
@@ -172,8 +229,8 @@ CREATE TABLE `ip_type` (
 --
 -- 資料表結構 `lock`
 --
--- 建立時間： 2019 年 08 月 25 日 05:01
--- 最後更新： 2019 年 08 月 25 日 06:04
+-- 建立時間： 2020 年 09 月 01 日 20:35
+-- 最後更新： 2020 年 10 月 07 日 15:57
 --
 
 DROP TABLE IF EXISTS `lock`;
@@ -181,8 +238,11 @@ CREATE TABLE `lock` (
   `lock_id` int(10) UNSIGNED NOT NULL,
   `lock_type_id` int(10) UNSIGNED NOT NULL DEFAULT 0,
   `ip` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `uid` int(10) UNSIGNED DEFAULT NULL,
+  `gid` int(10) UNSIGNED DEFAULT NULL,
   `lock_date` datetime DEFAULT NULL,
   `unlock_date` datetime DEFAULT NULL,
+  `title` text COLLATE utf8_unicode_ci NOT NULL,
   `description` longtext COLLATE utf8_unicode_ci DEFAULT NULL,
   `lock_by_user_id` int(10) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -192,8 +252,7 @@ CREATE TABLE `lock` (
 --
 -- 資料表結構 `lock_type`
 --
--- 建立時間： 2019 年 08 月 17 日 10:52
--- 最後更新： 2019 年 08 月 23 日 05:33
+-- 建立時間： 2020 年 09 月 01 日 20:35
 --
 
 DROP TABLE IF EXISTS `lock_type`;
@@ -205,9 +264,26 @@ CREATE TABLE `lock_type` (
 -- --------------------------------------------------------
 
 --
+-- 資料表結構 `netflow`
+--
+-- 建立時間： 2020 年 09 月 01 日 20:35
+--
+
+DROP TABLE IF EXISTS `netflow`;
+CREATE TABLE `netflow` (
+  `ip` int(11) NOT NULL,
+  `wan_upload` int(11) NOT NULL,
+  `wan_download` int(11) NOT NULL,
+  `lan_upload` int(11) NOT NULL,
+  `lan_download` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- 資料表結構 `permission`
 --
--- 建立時間： 2019 年 08 月 17 日 10:52
+-- 建立時間： 2020 年 09 月 01 日 20:35
 --
 
 DROP TABLE IF EXISTS `permission`;
@@ -221,24 +297,37 @@ CREATE TABLE `permission` (
 --
 -- 資料表結構 `switch`
 --
--- 建立時間： 2019 年 08 月 23 日 06:51
--- 最後更新： 2019 年 08 月 23 日 06:51
+-- 建立時間： 2020 年 09 月 01 日 20:35
 --
 
 DROP TABLE IF EXISTS `switch`;
 CREATE TABLE `switch` (
-  `switch_id` int(11) NOT NULL,
-  `upper_id` int(11) DEFAULT NULL,
+  `id` int(11) NOT NULL,
+  `upper_switch` int(11) DEFAULT NULL,
   `upper_port` int(11) DEFAULT NULL,
   `upper_port_type` int(11) NOT NULL,
   `location` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
   `account` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
   `password` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
-  `vlan` int(11) NOT NULL,
+  `vlan` text COLLATE utf8_unicode_ci NOT NULL,
   `machine_type` int(11) NOT NULL,
   `port_description` longtext COLLATE utf8_unicode_ci DEFAULT NULL,
-  `port_type` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `port_type` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `ip` varchar(32) COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `temptable`
+--
+-- 建立時間： 2020 年 09 月 01 日 20:35
+--
+
+DROP TABLE IF EXISTS `temptable`;
+CREATE TABLE `temptable` (
+  `bed` varchar(200) COLLATE utf8_unicode_ci NOT NULL,
+  `username` varchar(200) COLLATE utf8_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -246,8 +335,8 @@ CREATE TABLE `switch` (
 --
 -- 資料表結構 `token`
 --
--- 建立時間： 2019 年 08 月 27 日 05:27
--- 最後更新： 2019 年 08 月 27 日 05:28
+-- 建立時間： 2020 年 09 月 01 日 20:35
+-- 最後更新： 2020 年 10 月 07 日 15:52
 --
 
 DROP TABLE IF EXISTS `token`;
@@ -262,27 +351,27 @@ CREATE TABLE `token` (
 --
 -- 資料表結構 `user`
 --
--- 建立時間： 2019 年 08 月 17 日 10:52
--- 最後更新： 2019 年 08 月 23 日 07:51
+-- 建立時間： 2020 年 09 月 01 日 20:47
+-- 最後更新： 2020 年 10 月 07 日 15:26
 --
 
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `uid` int(10) UNSIGNED NOT NULL,
-  `username` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
-  `password_hash` text COLLATE utf8_unicode_ci DEFAULT NULL,
-  `nick` text COLLATE utf8_unicode_ci DEFAULT NULL,
-  `department` text COLLATE utf8_unicode_ci DEFAULT NULL,
-  `back_mail` text COLLATE utf8_unicode_ci DEFAULT NULL,
-  `note` text COLLATE utf8_unicode_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  `username` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password_hash` mediumtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `nick` mediumtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `department` mediumtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `back_mail` mediumtext COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `note` mediumtext COLLATE utf8mb4_unicode_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
 -- 資料表結構 `user_permission`
 --
--- 建立時間： 2019 年 08 月 17 日 10:52
+-- 建立時間： 2020 年 09 月 01 日 20:35
 --
 
 DROP TABLE IF EXISTS `user_permission`;
@@ -297,8 +386,8 @@ CREATE TABLE `user_permission` (
 --
 -- 資料表結構 `variable`
 --
--- 建立時間： 2019 年 08 月 22 日 05:10
--- 最後更新： 2019 年 08 月 22 日 05:12
+-- 建立時間： 2020 年 09 月 01 日 20:35
+-- 最後更新： 2020 年 10 月 07 日 16:10
 --
 
 DROP TABLE IF EXISTS `variable`;
@@ -346,6 +435,14 @@ ALTER TABLE `group_inherit`
   ADD KEY `group_inherit_fk_group_p_idx` (`parent_gid`);
 
 --
+-- 資料表索引 `group_managed_by`
+--
+ALTER TABLE `group_managed_by`
+  ADD PRIMARY KEY (`gid`) USING BTREE,
+  ADD KEY `fk_gid_managed_by_gid` (`gid`) USING BTREE,
+  ADD KEY `fk_gid_managed_by_parent_gid` (`parent_gid`) USING BTREE;
+
+--
 -- 資料表索引 `group_permission`
 --
 ALTER TABLE `group_permission`
@@ -363,6 +460,17 @@ ALTER TABLE `group_user`
 -- 資料表索引 `iptable`
 --
 ALTER TABLE `iptable`
+  ADD PRIMARY KEY (`ip`),
+  ADD UNIQUE KEY `mac` (`mac`),
+  ADD KEY `iptable_fk_switch` (`switch_id`),
+  ADD KEY `iptable_fk_ip_type` (`ip_type_id`),
+  ADD KEY `iptable_fk_user` (`uid`),
+  ADD KEY `iptable_fk_group` (`gid`);
+
+--
+-- 資料表索引 `iptable_test`
+--
+ALTER TABLE `iptable_test`
   ADD PRIMARY KEY (`ip`),
   ADD KEY `iptable_fk_switch` (`switch_id`),
   ADD KEY `iptable_fk_ip_type` (`ip_type_id`),
@@ -391,6 +499,12 @@ ALTER TABLE `lock_type`
   ADD PRIMARY KEY (`lock_type_id`);
 
 --
+-- 資料表索引 `netflow`
+--
+ALTER TABLE `netflow`
+  ADD PRIMARY KEY (`ip`);
+
+--
 -- 資料表索引 `permission`
 --
 ALTER TABLE `permission`
@@ -401,8 +515,8 @@ ALTER TABLE `permission`
 -- 資料表索引 `switch`
 --
 ALTER TABLE `switch`
-  ADD PRIMARY KEY (`switch_id`),
-  ADD KEY `switch_fk_self_upper_id_idx` (`upper_id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `switch_fk_self_upper_switch_idx` (`upper_switch`) USING BTREE;
 
 --
 -- 資料表索引 `token`
@@ -437,6 +551,12 @@ ALTER TABLE `variable`
 --
 
 --
+-- 使用資料表自動遞增(AUTO_INCREMENT) `announcement`
+--
+ALTER TABLE `announcement`
+  MODIFY `announcement_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- 使用資料表自動遞增(AUTO_INCREMENT) `group`
 --
 ALTER TABLE `group`
@@ -453,6 +573,12 @@ ALTER TABLE `lock`
 --
 ALTER TABLE `permission`
   MODIFY `pid` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `user`
+--
+ALTER TABLE `user`
+  MODIFY `uid` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- 已傾印資料表的限制式
@@ -478,6 +604,13 @@ ALTER TABLE `group_inherit`
   ADD CONSTRAINT `group_inherit_fk_group_p` FOREIGN KEY (`parent_gid`) REFERENCES `group` (`gid`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
+-- 資料表的限制式 `group_managed_by`
+--
+ALTER TABLE `group_managed_by`
+  ADD CONSTRAINT `fk_gid_managed_by_gid` FOREIGN KEY (`gid`) REFERENCES `group` (`gid`),
+  ADD CONSTRAINT `fk_gid_managed_by_parent_gid` FOREIGN KEY (`parent_gid`) REFERENCES `group` (`gid`);
+
+--
 -- 資料表的限制式 `group_permission`
 --
 ALTER TABLE `group_permission`
@@ -497,7 +630,7 @@ ALTER TABLE `group_user`
 ALTER TABLE `iptable`
   ADD CONSTRAINT `iptable_fk_group` FOREIGN KEY (`gid`) REFERENCES `group` (`gid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `iptable_fk_ip_type` FOREIGN KEY (`ip_type_id`) REFERENCES `ip_type` (`ip_type_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `iptable_fk_switch` FOREIGN KEY (`switch_id`) REFERENCES `switch` (`switch_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `iptable_fk_switch` FOREIGN KEY (`switch_id`) REFERENCES `switch` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `iptable_fk_user` FOREIGN KEY (`uid`) REFERENCES `user` (`uid`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
@@ -511,7 +644,7 @@ ALTER TABLE `lock`
 -- 資料表的限制式 `switch`
 --
 ALTER TABLE `switch`
-  ADD CONSTRAINT `switch_fk_self_upper_id` FOREIGN KEY (`upper_id`) REFERENCES `switch` (`switch_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `switch_fk_self_upper_id` FOREIGN KEY (`upper_switch`) REFERENCES `switch` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- 資料表的限制式 `token`
@@ -525,6 +658,7 @@ ALTER TABLE `token`
 ALTER TABLE `user_permission`
   ADD CONSTRAINT `user_permission_fk_permission` FOREIGN KEY (`pid`) REFERENCES `permission` (`pid`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `user_permission_fk_user` FOREIGN KEY (`uid`) REFERENCES `user` (`uid`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+SET FOREIGN_KEY_CHECKS=1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
